@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balkan Avto — Isplativost tura</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f4f6f8;--panel:#ffffff;--ink:#101828;--muted:#667085;--line:#eaecf0;
+  --brand:#1b3a5b;--brand-2:#2f6fb0;--ok:#0e9f6e;--warn:#c2710c;--danger:#d92d20;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);--radius:12px;--r-sm:8px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased;letter-spacing:.1px}
+a{color:var(--brand-2);text-decoration:none}
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#12263a;color:#c4d2e0;flex-shrink:0;display:flex;flex-direction:column}
+.sidebar .logo{padding:20px 18px;font-weight:700;font-size:16px;color:#fff;letter-spacing:.2px}
+.sidebar .logo small{display:block;font-weight:400;font-size:11px;color:#7e93a8;margin-top:3px}
+.nav{padding:8px}
+.nav button{width:100%;text-align:left;background:none;border:0;color:#c4d2e0;padding:10px 14px;border-radius:var(--r-sm);cursor:pointer;font-size:14px;display:flex;gap:9px;transition:background .12s}
+.nav button:hover{background:rgba(255,255,255,.07)}
+.nav button.active{background:var(--brand-2);color:#fff;font-weight:600}
+.sidebar .who{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#9fb0c2}
+.sidebar .who b{color:#fff}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--panel);border-bottom:1px solid var(--line);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+.topbar h1{font-size:18px;margin:0}
+.content{padding:22px;max-width:1300px;width:100%}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
+.panel h2{margin:0 0 14px;font-size:15px;font-weight:650;color:var(--ink);letter-spacing:.2px}
+.grid{display:grid;gap:14px}.kpis{grid-template-columns:repeat(auto-fill,minmax(168px,1fr))}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;box-shadow:var(--shadow)}
+.kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600}.kpi .value{font-size:22px;font-weight:700;margin-top:5px;color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border:0;padding:9px 15px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;font-weight:600}
+.btn:hover{background:var(--brand-2)}.btn.sec{background:#eef1f5;color:var(--ink)}.btn.sec:hover{background:#e2e7ee}
+.btn.ghost{background:none;color:var(--brand-2);padding:6px 8px}.btn.sm{padding:5px 10px;font-size:12px}.btn.danger{background:var(--danger)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.field{margin-bottom:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:14px;font-family:inherit;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(23,105,170,.12)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.err{color:var(--danger);font-size:12px;margin-top:4px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:var(--radius)}
+table.data{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+table.data th,table.data td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+table.data th{background:#f3f5f8;font-weight:600;position:sticky;top:0}
+table.data td.num,table.data th.num{text-align:right}
+table.data tr:hover td{background:#fafbfd}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid transparent}
+.badge.success{background:#e7f6ee;color:var(--ok);border-color:#bfe6cf}.badge.ok{background:#e8f1fb;color:var(--brand-2);border-color:#c4ddf5}
+.badge.warn{background:#fdf3df;color:var(--warn);border-color:#f3dfac}.badge.danger{background:#fcebe9;color:var(--danger);border-color:#f3c6c1}
+.badge.neutral{background:#eef1f5;color:var(--muted);border-color:#dde2ea}
+.stepper{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.stepper .step{flex:1;min-width:88px;text-align:center;padding:9px 6px;border-radius:var(--r-sm);background:#eef1f5;color:var(--muted);font-size:12px;font-weight:600;border:1px solid var(--line)}
+.stepper .step.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.stepper .step.done{background:#e7f6ee;color:var(--ok);border-color:#bfe6cf}
+.filters{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-items:end}
+#toasts{position:fixed;right:18px;bottom:18px;z-index:100;display:flex;flex-direction:column;gap:8px}
+.toast{background:#1c2430;color:#fff;padding:11px 15px;border-radius:var(--r-sm);box-shadow:var(--shadow);font-size:13px;max-width:340px}
+.toast.ok{background:#13633a}.toast.err{background:#9e2a20}
+.modal-bg{position:fixed;inset:0;background:rgba(16,24,40,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:60;overflow:auto}
+.modal{background:#fff;border-radius:var(--radius);max-width:780px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.modal header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal header h3{margin:0;font-size:16px}.modal .body{padding:20px}
+.modal footer{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.analysis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.analysis .cell{background:#f8fafc;border:1px solid var(--line);border-radius:var(--r-sm);padding:12px}
+.analysis .cell .l{font-size:11px;color:var(--muted)}.analysis .cell .v{font-size:18px;font-weight:700;margin-top:3px}
+.warnbox{background:#fdf3df;border:1px solid #f3dfac;color:#7a5600;padding:11px 14px;border-radius:var(--r-sm);margin-top:12px;font-size:13px}
+.muted{color:var(--muted)}.right{text-align:right}.center{text-align:center}
+.flex{display:flex;gap:10px;align-items:center}.flex.between{justify-content:space-between}.flex.wrap{flex-wrap:wrap}
+.chart-box{position:relative;height:280px}.tag{font-size:11px;background:#eef1f5;border-radius:6px;padding:2px 7px;color:var(--muted)}
+@media(max-width:820px){.sidebar{width:64px}.sidebar .logo small,.sidebar .who,.nav button span{display:none}.nav button{justify-content:center}.row,.row-3{grid-template-columns:1fr}}
+.tag.success{background:#e7f6ee;color:var(--ok)}
+.form2{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+.form2 .side{position:sticky;top:78px}
+.sub{font-size:13px;font-weight:700;margin:0 0 10px;color:var(--brand);border-bottom:1px solid var(--line);padding-bottom:6px}
+.qadd{background:none;border:1px dashed var(--brand-2);color:var(--brand-2);border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-weight:600;margin-left:6px}
+.qadd:hover{background:#eef5fb}
+.statussel{padding:5px 7px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:#fff;max-width:160px}
+.actions{display:flex;gap:4px;flex-wrap:wrap}.actions .btn{padding:4px 9px;font-size:11px}
+table.data.tight th,table.data.tight td{padding:7px 9px;font-size:12.5px}
+@media(max-width:1100px){.form2{grid-template-columns:1fr}.form2 .side{position:static}}
+@media(max-width:1000px){.rgrid{grid-template-columns:1fr!important}}
+/* ---------- TELEFON ---------- */
+@media(max-width:640px){
+  .content{padding:12px}
+  .topbar{padding:11px 14px}.topbar h1{font-size:16px}
+  .panel{padding:13px;margin-bottom:13px;border-radius:8px}
+  .filters{grid-template-columns:1fr 1fr;gap:8px}
+  .kpis{grid-template-columns:1fr 1fr}.kpi .value{font-size:18px}
+  .analysis{grid-template-columns:1fr 1fr}
+  .grid[style*="1fr 1fr"]{grid-template-columns:1fr!important}
+  .chart-box{height:230px}
+  table.data th,table.data td,table.data.tight th,table.data.tight td{padding:8px 8px;font-size:12px}
+  .btn{padding:9px 13px}.btn.sm{padding:7px 11px}
+  .actions .btn{padding:7px 10px;font-size:12px}
+  .statussel{max-width:130px;padding:7px}
+  .modal-bg{padding:10px 8px}.modal{max-width:100%;border-radius:10px}.modal .body{padding:14px}
+  .modal footer{padding:12px 14px}
+  .field input,.field select,.field textarea{padding:10px 11px;font-size:15px}
+  .sidebar .logo{padding:14px}
+  #toasts{right:10px;left:10px;bottom:10px}.toast{max-width:100%}
+  .qadd{padding:7px 10px}
+}
+@media(max-width:380px){ .filters{grid-template-columns:1fr}.kpis,.analysis{grid-template-columns:1fr} }
+@media(max-width:600px){
+  .content{padding:12px}
+  .topbar{padding:10px 12px}.topbar h1{font-size:16px}
+  .panel{padding:13px;border-radius:9px}
+  .filters{grid-template-columns:1fr 1fr}
+  .row,.row-3{grid-template-columns:1fr;gap:10px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .analysis{grid-template-columns:1fr 1fr}
+  .modal-bg{padding:12px 8px}.modal{border-radius:10px}.modal .body{padding:14px}
+  .grid[style*="1fr 1fr"]{grid-template-columns:1fr!important}
+  .chart-box{height:240px}
+  table.data.tight th,table.data.tight td{padding:6px 7px;font-size:12px}
+  .btn{padding:8px 12px}.actions .btn{padding:5px 8px}
+  .sidebar{position:sticky;top:0;z-index:20}
+}
+@media(max-width:380px){ .filters{grid-template-columns:1fr}.kpis,.analysis{grid-template-columns:1fr} }
+
+/* ---------- A4 ŠTAMPA (brza štampa ekrana) ---------- */
+@media print{
+  @page{size:A4;margin:14mm 12mm}
+  .sidebar,.topbar,.nav,.btn,.filters,.stepper,#toasts,.no-print{display:none!important}
+  .app,.main,.content{display:block;padding:0;margin:0;max-width:100%}
+  body{background:#fff;font-size:11pt;color:#000}
+  .panel{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid;margin-bottom:8mm}
+  table.data th{position:static;background:#f0f0f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  table.data td,table.data th{white-space:normal}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">Balkan Avto<small>Isplativost tura</small></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="who" id="who"></div>
+  </aside>
+  <div class="main">
+    <div class="topbar"><h1 id="viewTitle">Dashboard</h1><div class="flex" id="topActions"></div></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+<div id="toasts"></div>
+<div id="modalRoot"></div>
+<div id="loginOverlay" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#12263a,#2f6fb0)">
+  <div style="background:#fff;border-radius:14px;padding:30px 28px;width:340px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.35)">
+    <div style="font-size:20px;font-weight:800;color:#0f2233">Balkan Avto</div>
+    <div style="color:#667;font-size:13px;margin-bottom:18px">Isplativost tura — prijava</div>
+    <label style="font-size:13px;color:#445">Korisničko ime</label>
+    <input id="loginUser" style="width:100%;padding:10px;margin:4px 0 12px;border:1px solid #cdd5dd;border-radius:8px" autocomplete="username">
+    <label style="font-size:13px;color:#445">Lozinka</label>
+    <input id="loginPass" type="password" style="width:100%;padding:10px;margin:4px 0 6px;border:1px solid #cdd5dd;border-radius:8px" autocomplete="current-password">
+    <div id="loginErr" style="color:#c0392b;font-size:13px;min-height:18px;margin-bottom:6px"></div>
+    <button onclick="doLogin()" style="width:100%;padding:11px;border:0;border-radius:8px;background:#2f6fb0;color:#fff;font-weight:700;font-size:15px;cursor:pointer">Prijava</button>
+    <div style="color:#8794a0;font-size:12px;margin-top:12px;text-align:center">Demo: admin / admin · korisnik / korisnik</div>
+  </div>
+</div>
+<script>
+/* =====================================================================
+   BALKAN AVTO — standalone (localStorage). Logika obračuna identična
+   validiranoj Apps Script verziji. Otvara se dvoklikom na fajl.
+   ===================================================================== */
+/* ---------- enumi ---------- */
+var TOUR_STATUS=['priprema','ponuda_poslata','prihvaćena','u_realizaciji','realizovana','fakturisana','naplaćena','otkazana','arhivirana'];
+var ROLES=['admin','manager','operator','readonly'];
+var COST_CATEGORIES=['gorivo','putarine','vozač','amortizacija','održavanje','gume','osiguranje','registracija','lizing','administracija','carina','parking','trajekt','špedicija','ostalo'];
+var COST_TYPES=['fixed_per_tour','per_total_km','per_loaded_km','per_empty_km','per_day','percent_of_revenue','manual_amount','fuel_formula'];
+var COST_TYPE_LABEL={fixed_per_tour:'fiksno po turi',per_total_km:'po ukupnom km',per_loaded_km:'po punom km',per_empty_km:'po praznom km',per_day:'po danu',percent_of_revenue:'% od prihoda',manual_amount:'ručni iznos',fuel_formula:'formula goriva'};
+var CALC_BASES=['total_km','loaded_km','empty_km','days','revenue','manual','fuel_consumption'];
+var STATUS_TONE={priprema:'neutral',ponuda_poslata:'ok','prihvaćena':'ok',u_realizaciji:'warn',realizovana:'success',fakturisana:'ok','naplaćena':'success',otkazana:'danger',arhivirana:'neutral'};
+
+/* ---------- format helperi ---------- */
+function num(v){ if(v===''||v===null||v===undefined) return 0; if(typeof v==='number') return isFinite(v)?v:0;
+  var s=String(v).trim(); if(s.indexOf(',')>-1&&s.indexOf('.')>-1) s=s.replace(/\./g,'').replace(',','.'); else s=s.replace(',','.');
+  s=s.replace(/[^0-9.\-]/g,''); var n=parseFloat(s); return isFinite(n)?n:0; }
+function r2(v){ v=Number(v); return isFinite(v)?Math.round((v+Number.EPSILON)*100)/100:0; }
+function safeDivide(a,b){ b=Number(b); return (!b||!isFinite(b))?0:a/b; }
+function fmtN(v,d){ v=Number(v)||0; var f=v.toFixed(d); var p=f.split('.'); p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.'); return d>0?p.join(','):p[0]; }
+function eur(v){ return fmtN(r2(v),2)+' €'; }
+function eurKm(v){ return fmtN(r2(v),2)+' €/km'; }
+function pct(v){ return fmtN(r2(v),2)+'%'; }
+function dateSr(v){ if(!v) return ''; var d=new Date(v); if(isNaN(d.getTime())) return String(v);
+  return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear()+'.'; }
+function escapeHtml(v){ return String(v===undefined||v===null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function nowIso(){ return new Date().toISOString(); }
+function uid(p){ return p+'-'+Date.now().toString(36)+Math.floor(Math.random()*1000); }
+
+/* ---------- cloud + prijava + valuta ---------- */
+var CONFIG={apiUrl:''};
+var API_KEY='balkan_avto_api_url_v1';
+var SESS_KEY='balkan_avto_user_v1';
+var ONLINE=false, CURRENT_USER=null, _syncTimer=null;
+function loadApiUrl(){ try{return localStorage.getItem(API_KEY)||'';}catch(e){return '';} }
+function saveApiUrl(u){ try{ if(u)localStorage.setItem(API_KEY,u); else localStorage.removeItem(API_KEY);}catch(e){} }
+function isAdmin(){ return CURRENT_USER&&CURRENT_USER.role==='admin'; }
+function clientCurrency(c){ if(!c) return 'EUR'; var z=String(c.country||'').toLowerCase();
+  if(c.currency==='DIN'||c.currency==='EUR') return c.currency;
+  return (z.indexOf('srb')>-1||z.indexOf('srbij')>-1)?'DIN':'EUR'; }
+function eurRate(){ var r=num(DB.settings.eur_din_rate); return r>0?r:117.5; }
+function moneyDoc(eurV,cur){ eurV=r2(eurV); return cur==='DIN'?(fmtN(r2(eurV*eurRate()),2)+' RSD'):(fmtN(eurV,2)+' €'); }
+function companyOpts(){ return (DB.companies||[]).filter(function(c){return c.active!==false;}).map(function(c){return {value:c.company_id,label:c.name};}); }
+function defaultCompanyId(){ return DB.settings.default_company_id || ((DB.companies&&DB.companies[0])?DB.companies[0].company_id:''); }
+function companyById(id){ var c=(DB.companies||[]).filter(function(x){return x.company_id===id;})[0]; if(c)return c; return (DB.companies&&DB.companies[0])||{name:DB.settings.company_name||'',iban:DB.settings.company_iban||'',swift:DB.settings.company_swift||'',bank_account:DB.settings.company_bank_account||'',pib:DB.settings.company_pib||'',vat_number:DB.settings.company_vat_number||'',address:'',city:'',country:'',email:'',phone:'',footer_text:DB.settings.pdf_footer_text||''}; }
+function companyName(id){ var c=(DB.companies||[]).filter(function(x){return x.company_id===id;})[0]; return c?c.name:''; }
+function selE(id,opts,selected,ph,onchange){ var o=(ph!==undefined?'<option value="">'+escapeHtml(ph)+'</option>':'');
+  o+=opts.map(function(x){var v=(typeof x==='object')?x.value:x,l=(typeof x==='object')?x.label:x;return '<option value="'+escapeHtml(v)+'"'+(String(v)===String(selected)?' selected':'')+'>'+escapeHtml(l)+'</option>';}).join('');
+  return '<select id="'+id+'"'+(onchange?' onchange="'+onchange+'"':'')+'>'+o+'</select>'; }
+
+/* ---------- baza: localStorage + opciono Google Sheets ---------- */
+var DB_KEY='balkan_avto_db_v1';
+var DB=null;
+function apiCall(action,payload){ var body=Object.assign({action:action},payload||{});
+  return fetch(CONFIG.apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
+    .then(function(r){return r.json();}).then(function(j){ if(!j||!j.ok) throw new Error((j&&j.error)||'Greška servera'); return j.data; }); }
+function setOnline(on){ ONLINE=on; var b=document.getElementById('cloudBadge');
+  if(b){ b.className='tag '+(on?'success':'neutral'); b.textContent=on?'● Google Sheets':'● Lokalno'; } }
+function loadLocal(){ try{ return JSON.parse(localStorage.getItem(DB_KEY)); }catch(e){ return null; } }
+function saveLocal(){ try{ localStorage.setItem(DB_KEY,JSON.stringify(DB)); }catch(e){} }
+function loadDB(cb){
+  CONFIG.apiUrl=CONFIG.apiUrl||loadApiUrl();
+  if(CONFIG.apiUrl){
+    apiCall('get').then(function(data){
+      DB=(data&&data.settings)?data:(loadLocal()||seed());
+      saveLocal(); setOnline(true); if(cb)cb();
+    }).catch(function(){ DB=loadLocal()||seed(); setOnline(false); if(cb)cb(); });
+    return;
+  }
+  DB=loadLocal(); if(!DB){ DB=seed(); saveLocal(); } setOnline(false); if(cb)cb();
+}
+function saveDB(){ saveLocal(); if(CONFIG.apiUrl&&ONLINE){ clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(function(){ apiCall('put',{db:DB}).catch(function(){ setOnline(false);
+    if(typeof toast==='function') toast('Sinhronizacija pala — radim lokalno.','warn'); }); },400); } }
+function pushCloudNow(){ return apiCall('put',{db:DB}); }
+function table(t){ return DB[t]||(DB[t]=[]); }
+function byId(t,field,id){ return table(t).filter(function(r){return r[field]===id;})[0]||null; }
+function genTourNumber(){ var y=new Date().getFullYear(); var n=table('tours').filter(function(t){return (t.tour_number||'').indexOf('TOUR-'+y)===0;}).length+1; return 'TOUR-'+y+'-'+('000'+n).slice(-4); }
+
+/* ---------- seed demo podataka ---------- */
+function seed(){
+  var db={settings:{},companies:[],clients:[],trucks:[],drivers:[],costItems:[],tours:[],tourCosts:[],documents:[],relations:[],users:[]};
+  db.companies=[
+    {company_id:'CO-AVTO',name:'BALKAN AVTO d.o.o.',short:'AVTO',address:'Industrijska 12',city:'Ljubljana',country:'Slovenija',
+     pib:'SI12345678',registration_number:'SI-2100',vat_number:'SI12345678',email:'office@balkanavto.si',phone:'+386 1 234 5678',
+     bank_account:'',iban:'SI56 0000 0000 0000 000',swift:'LJBASI2X',footer_text:'BALKAN AVTO d.o.o. — Hvala na poverenju.',logo_url:'',active:true},
+    {company_id:'CO-TRANS',name:'BALKAN TRANSPORT d.o.o.',short:'TRANSPORT',address:'Bulevar 1',city:'Beograd',country:'Srbija',
+     pib:'PIB123456789',registration_number:'21001122',vat_number:'RS123456789',email:'office@balkantransport.rs',phone:'+381 11 234 5678',
+     bank_account:'160-000000123456-78',iban:'RS35160000000123456789',swift:'DBDBRSBG',footer_text:'BALKAN TRANSPORT d.o.o. — Hvala na poverenju.',logo_url:'',active:true}
+  ];
+  db.settings={ default_company_id:'CO-AVTO',
+    fuel_price_eur_per_l:1.45, default_vat_rate:20, default_profit_margin_percent:15, default_payment_terms_days:30,
+    eur_din_rate:117.5, pdf_footer_text:'Hvala na poverenju.',
+    /* legacy (fallback) */ company_name:'BALKAN AVTO d.o.o.', company_iban:'', company_swift:'', company_bank_account:'', company_pib:'', company_vat_number:'', company_logo_url:'' };
+  db.users.push(
+    {user_id:uid('USR'),username:'admin',password:'admin',email:'',name:'Administrator',role:'admin',active:true,created_at:nowIso()},
+    {user_id:uid('USR'),username:'korisnik',password:'korisnik',email:'',name:'Operativa',role:'korisnik',active:true,created_at:nowIso()}
+  );
+  var c1={client_id:'CLIENT-0001',client_name:'AutoLog GmbH',legal_name:'AutoLog GmbH',pib_vat:'DE811234567',
+    registration_number:'HRB12345',address:'Hafenstraße 5',city:'Hamburg',country:'Nemačka',contact_person:'M. Keller',
+    email:'dispo@autolog.de',phone:'+49 40 111222',billing_email:'rechnung@autolog.de',payment_terms_days:30,note:'',active:true};
+  var c2={client_id:'CLIENT-0002',client_name:'CarTrans Italia',legal_name:'CarTrans S.r.l.',pib_vat:'IT09876543210',
+    registration_number:'MI998877',address:'Via Roma 10',city:'Milano',country:'Italija',contact_person:'L. Rossi',
+    email:'ops@cartrans.it',phone:'+39 02 333444',billing_email:'fatture@cartrans.it',payment_terms_days:45,note:'',active:true};
+  db.clients.push(c1,c2);
+  var t1={truck_id:'TRUCK-0001',plate_number:'BG-123-AB',trailer_plate_number:'BG-700-PR',brand:'Mercedes',model:'Actros',
+    year:2021,euro_standard:'Euro 6',truck_type:'autotransporter',capacity_kg:11000,fuel_type:'dizel',
+    avg_consumption_loaded_l_100km:32,avg_consumption_empty_l_100km:26,depreciation_per_km_eur:0.15,
+    maintenance_per_km_eur:0.08,tires_per_km_eur:0.03,insurance_per_day_eur:12,registration_per_day_eur:6,
+    leasing_per_day_eur:40,other_fixed_per_day_eur:5,note:'',active:true};
+  var t2={truck_id:'TRUCK-0002',plate_number:'NS-456-CD',trailer_plate_number:'NS-800-PR',brand:'Volvo',model:'FH',
+    year:2020,euro_standard:'Euro 6',truck_type:'autotransporter',capacity_kg:10500,fuel_type:'dizel',
+    avg_consumption_loaded_l_100km:33,avg_consumption_empty_l_100km:27,depreciation_per_km_eur:0.14,
+    maintenance_per_km_eur:0.09,tires_per_km_eur:0.03,insurance_per_day_eur:11,registration_per_day_eur:6,
+    leasing_per_day_eur:38,other_fixed_per_day_eur:5,note:'',active:true};
+  db.trucks.push(t1,t2);
+  db.drivers.push(
+    {driver_id:'DRIVER-0001',full_name:'Marko Petrović',phone:'+381 64 111222',email:'marko@balkanavto.rs',
+     license_number:'CE-100',passport_number:'P123',default_daily_allowance_eur:35,default_salary_per_day_eur:60,default_salary_per_km_eur:0.18,default_bonus_per_km_eur:0,note:'',active:true},
+    {driver_id:'DRIVER-0002',full_name:'Ivan Jovanović',phone:'+381 63 333444',email:'ivan@balkanavto.rs',
+     license_number:'CE-200',passport_number:'P456',default_daily_allowance_eur:35,default_salary_per_day_eur:62,default_salary_per_km_eur:0.20,default_bonus_per_km_eur:0,note:'',active:true});
+  var ci=[
+    ['Gorivo','gorivo','fuel_formula','fuel_consumption','EUR',0,true],
+    ['Putarine i tunelarine','putarine','per_total_km','total_km','EUR/km',0.12,true],
+    ['Dnevnice vozača','vozač','per_day','days','EUR/dan',35,true],
+    ['Plata vozača (po km)','vozač','per_total_km','total_km','EUR/km',0.18,true],
+    ['Plata vozača (po danu)','vozač','per_day','days','EUR/dan',60,false,false],
+    ['Amortizacija vozila','amortizacija','per_total_km','total_km','EUR/km',0.15,true],
+    ['Održavanje','održavanje','per_total_km','total_km','EUR/km',0.08,true],
+    ['Gume','gume','per_total_km','total_km','EUR/km',0.03,true],
+    ['Osiguranje','osiguranje','per_day','days','EUR/dan',12,true],
+    ['Registracija','registracija','per_day','days','EUR/dan',6,false],
+    ['Lizing','lizing','per_day','days','EUR/dan',40,false],
+    ['Administrativni trošak','administracija','percent_of_revenue','revenue','%',2,true],
+    ['Parking','parking','fixed_per_tour','manual','EUR',15,false]
+  ];
+  ci.forEach(function(x,i){ db.costItems.push({cost_item_id:'COST-'+('000'+(i+1)).slice(-4),name:x[0],category:x[1],
+    type:x[2],calculation_base:x[3],unit:x[4],default_rate:x[5],is_mandatory:x[6],is_active:(x[7]===undefined?true:x[7]),target:'',sort_order:i+1,note:'',created_at:nowIso(),updated_at:nowIso()}); });
+  // demo ture preko realnog saveTourCore
+  DB=db;
+  var d=new Date(); var ym=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+  saveTourCore({status:'realizovana',company_id:'CO-AVTO',client_id:'CLIENT-0001',origin:'Beograd',destination:'Hamburg',
+    loading_address:'Beograd, luka',unloading_address:'Hamburg, terminal',loading_date:ym+'-05',unloading_date:ym+'-08',
+    start_date:ym+'-05',end_date:ym+'-08',days:3,cargo_description:'5 vozila',cargo_weight_kg:7500,
+    truck_id:'TRUCK-0001',driver_id:'DRIVER-0001',loaded_km:1100,empty_km:200,
+    freight_revenue_eur:2400,fuel_surcharge_eur:120,other_revenue_eur:0,vat_rate_percent:20,
+    target_profit_margin_percent:15,payment_terms_days:30});
+  saveTourCore({status:'fakturisana',company_id:'CO-TRANS',client_id:'CLIENT-0002',origin:'Novi Sad',destination:'Milano',
+    loading_address:'Novi Sad',unloading_address:'Milano',loading_date:ym+'-10',unloading_date:ym+'-12',
+    start_date:ym+'-10',end_date:ym+'-12',days:3,cargo_description:'6 vozila',cargo_weight_kg:8200,
+    truck_id:'TRUCK-0002',driver_id:'DRIVER-0002',loaded_km:980,empty_km:140,
+    freight_revenue_eur:2100,fuel_surcharge_eur:90,other_revenue_eur:0,vat_rate_percent:20,
+    target_profit_margin_percent:15,payment_terms_days:45});
+  saveTourCore({status:'ponuda_poslata',company_id:'CO-AVTO',client_id:'CLIENT-0001',origin:'Beograd',destination:'Beč',
+    loading_address:'Beograd',unloading_address:'Beč',loading_date:ym+'-18',unloading_date:ym+'-19',
+    start_date:ym+'-18',end_date:ym+'-19',days:2,cargo_description:'4 vozila',cargo_weight_kg:5200,
+    truck_id:'TRUCK-0001',driver_id:'DRIVER-0001',loaded_km:620,empty_km:90,
+    freight_revenue_eur:1150,fuel_surcharge_eur:60,other_revenue_eur:0,vat_rate_percent:20,
+    target_profit_margin_percent:15,payment_terms_days:30});
+  return DB;
+}
+/* =====================================================================
+   MOTOR OBRAČUNA (identičan validiranoj Apps Script verziji)
+   ===================================================================== */
+function computeCostLine(item,ctx){
+  var rate=num(item.rate_eur!==undefined?item.rate_eur:item.default_rate); var qty=0,amount=0;
+  switch(item.type){
+    case 'fixed_per_tour': qty=1; amount=rate; break;
+    case 'per_total_km': qty=ctx.total_km; amount=ctx.total_km*rate; break;
+    case 'per_loaded_km': qty=ctx.loaded_km; amount=ctx.loaded_km*rate; break;
+    case 'per_empty_km': qty=ctx.empty_km; amount=ctx.empty_km*rate; break;
+    case 'per_day': qty=ctx.days; amount=ctx.days*rate; break;
+    case 'percent_of_revenue': qty=ctx.total_revenue; amount=ctx.total_revenue*rate/100; break;
+    case 'manual_amount': qty=1; amount=num(item.manual_amount!==undefined?item.manual_amount:rate); break;
+    case 'fuel_formula':
+      var fl=ctx.loaded_km*ctx.consumption_loaded/100, fe=ctx.empty_km*ctx.consumption_empty/100;
+      qty=fl+fe; amount=qty*ctx.fuel_price; break;
+    default: qty=0; amount=num(item.manual_amount)||0;
+  }
+  return {quantity:r2(qty),rate:r2(rate),amount:r2(amount)};
+}
+function buildCostLinesFromActive(tour,truck,driver){
+  return table('costItems').filter(function(c){ if(!(c.is_active===true||num(c.is_active)===1))return false;
+      var tg=c.target||''; if(!tg)return true;
+      if(tg.indexOf('truck:')===0) return !!truck && ('truck:'+truck.truck_id)===tg;
+      if(tg.indexOf('driver:')===0) return !!driver && ('driver:'+driver.driver_id)===tg;
+      return true; }).map(function(c){
+    var rate=num(c.default_rate);
+    if(truck){ if(c.category==='amortizacija')rate=num(truck.depreciation_per_km_eur)||rate;
+      if(c.category==='održavanje')rate=num(truck.maintenance_per_km_eur)||rate;
+      if(c.category==='gume')rate=num(truck.tires_per_km_eur)||rate;
+      if(c.category==='osiguranje')rate=num(truck.insurance_per_day_eur)||rate;
+      if(c.category==='registracija')rate=num(truck.registration_per_day_eur)||rate;
+      if(c.category==='lizing')rate=num(truck.leasing_per_day_eur)||rate; }
+    if(driver&&c.category==='vozač'){ if(/dnevnic/i.test(c.name))rate=num(driver.default_daily_allowance_eur)||rate;
+      else if(/po km|\/km|km\)/i.test(c.name))rate=num(driver.default_salary_per_km_eur)||rate;
+      else if(/plata/i.test(c.name))rate=num(driver.default_salary_per_day_eur)||rate; }
+    return {cost_item_id:c.cost_item_id,name:c.name,category:c.category,type:c.type,unit:c.unit,
+      default_rate:rate,rate_eur:rate,calculation_base:c.calculation_base,manually_overridden:false};
+  });
+}
+function calculateTourProfitability(tour,costItems,truck,driver){
+  var s=DB.settings;
+  var loaded_km=num(tour.loaded_km), empty_km=num(tour.empty_km), total_km=loaded_km+empty_km;
+  var days=num(tour.days)||1;
+  var empty_km_percent=safeDivide(empty_km,total_km)*100;
+  var freight=num(tour.freight_revenue_eur), fuelSur=num(tour.fuel_surcharge_eur), other=num(tour.other_revenue_eur);
+  var total_revenue=freight+fuelSur+other;
+  var ctx={loaded_km:loaded_km,empty_km:empty_km,total_km:total_km,days:days,total_revenue:total_revenue,
+    consumption_loaded:truck?num(truck.avg_consumption_loaded_l_100km):30,
+    consumption_empty:truck?num(truck.avg_consumption_empty_l_100km):25,
+    fuel_price:num(s.fuel_price_eur_per_l)||1.45};
+  var lines=[], total_cost=0;
+  (costItems||[]).forEach(function(item){
+    if(item.manually_overridden&&item.amount_eur!==undefined){
+      var amt=r2(num(item.amount_eur));
+      lines.push({cost_item_id:item.cost_item_id,name:item.name,category:item.category,type:item.type,unit:item.unit,
+        quantity:r2(num(item.quantity)),rate_eur:r2(num(item.rate_eur)),amount_eur:amt,
+        calculation_base:item.calculation_base,auto_calculated:false,manually_overridden:true,note:item.note||''});
+      total_cost+=amt; return;
+    }
+    var calc=computeCostLine(item,ctx);
+    lines.push({cost_item_id:item.cost_item_id,name:item.name,category:item.category,type:item.type,unit:item.unit,
+      quantity:calc.quantity,rate_eur:calc.rate,amount_eur:calc.amount,calculation_base:item.calculation_base,
+      auto_calculated:true,manually_overridden:false,note:item.note||''});
+    total_cost+=calc.amount;
+  });
+  total_cost=r2(total_cost);
+  var gross_profit=r2(total_revenue-total_cost);
+  var profit_margin=total_revenue>0?r2(safeDivide(gross_profit,total_revenue)*100):0;
+  var target=num(tour.target_profit_margin_percent)||num(s.default_profit_margin_percent)||0;
+  var suggested=(target>0&&target<100)?r2(safeDivide(total_cost,(1-target/100))):total_cost;
+  var vat_rate=(tour.vat_rate_percent===undefined||tour.vat_rate_percent==='')?num(s.default_vat_rate):num(tour.vat_rate_percent);
+  var vat_amount=r2(total_revenue*vat_rate/100), total_with_vat=r2(total_revenue+vat_amount);
+  return {loaded_km:loaded_km,empty_km:empty_km,total_km:total_km,empty_km_percent:r2(empty_km_percent),days:days,
+    total_revenue_eur:r2(total_revenue),total_cost_eur:total_cost,gross_profit_eur:gross_profit,profit_margin_percent:profit_margin,
+    revenue_per_total_km_eur:r2(safeDivide(total_revenue,total_km)),cost_per_total_km_eur:r2(safeDivide(total_cost,total_km)),
+    profit_per_total_km_eur:r2(safeDivide(gross_profit,total_km)),
+    revenue_per_loaded_km_eur:r2(safeDivide(total_revenue,loaded_km)),cost_per_loaded_km_eur:r2(safeDivide(total_cost,loaded_km)),
+    profit_per_loaded_km_eur:r2(safeDivide(gross_profit,loaded_km)),
+    target_profit_margin_percent:r2(target),suggested_price_eur:suggested,minimum_price_eur:r2(total_cost),
+    price_below_cost_warning:suggested<total_cost,vat_rate_percent:r2(vat_rate),vat_amount_eur:vat_amount,
+    total_with_vat_eur:total_with_vat,profitability_status:profitabilityStatus(profit_margin,target),cost_lines:lines};
+}
+function profitabilityStatus(margin,target){ target=target||0;
+  if(margin<0) return {key:'neisplativa',label:'Neisplativa',tone:'danger'};
+  if(margin>=target+5) return {key:'odlicna',label:'Odlična',tone:'success'};
+  if(margin>=target) return {key:'isplativa',label:'Isplativa',tone:'ok'};
+  return {key:'pregovor',label:'Za pregovor',tone:'warn'}; }
+
+/* ---------- čuvanje ture + SNAPSHOT troškova ---------- */
+function saveTourCore(tour){
+  var truck=tour.truck_id?byId('trucks','truck_id',tour.truck_id):null;
+  var driver=tour.driver_id?byId('drivers','driver_id',tour.driver_id):null;
+  var inputLines=(tour.cost_lines&&tour.cost_lines.length)?tour.cost_lines:buildCostLinesFromActive(tour,truck,driver);
+  var calc=calculateTourProfitability(tour,inputLines,truck,driver);
+  var isNew=!tour.tour_id;
+  var tourId=tour.tour_id||uid('TOUR'); var tourNumber=tour.tour_number||(isNew?genTourNumber():tour.tour_number);
+  var client=tour.client_id?byId('clients','client_id',tour.client_id):null;
+  var rec={tour_id:tourId,tour_number:tourNumber,quote_number:tour.quote_number||'',order_number:tour.order_number||'',
+    status:tour.status||'priprema',client_id:tour.client_id||'',client_name_snapshot:client?client.client_name:(tour.client_name_snapshot||''),
+    company_id:tour.company_id||defaultCompanyId(),
+    currency:client?clientCurrency(client):(tour.currency||'EUR'),
+    origin:tour.origin||'',destination:tour.destination||'',loading_address:tour.loading_address||'',unloading_address:tour.unloading_address||'',
+    loading_date:tour.loading_date||'',unloading_date:tour.unloading_date||'',start_date:tour.start_date||'',end_date:tour.end_date||'',
+    days:num(tour.days)||calc.days,cargo_description:tour.cargo_description||'',cargo_weight_kg:num(tour.cargo_weight_kg),
+    truck_id:tour.truck_id||'',truck_plate_snapshot:truck?truck.plate_number:'',trailer_plate_snapshot:truck?truck.trailer_plate_number:'',
+    driver_id:tour.driver_id||'',driver_name_snapshot:driver?driver.full_name:'',
+    loaded_km:calc.loaded_km,empty_km:calc.empty_km,total_km:calc.total_km,empty_km_percent:calc.empty_km_percent,
+    freight_revenue_eur:num(tour.freight_revenue_eur),fuel_surcharge_eur:num(tour.fuel_surcharge_eur),other_revenue_eur:num(tour.other_revenue_eur),
+    total_revenue_eur:calc.total_revenue_eur,total_cost_eur:calc.total_cost_eur,gross_profit_eur:calc.gross_profit_eur,
+    profit_margin_percent:calc.profit_margin_percent,revenue_per_total_km_eur:calc.revenue_per_total_km_eur,
+    cost_per_total_km_eur:calc.cost_per_total_km_eur,profit_per_total_km_eur:calc.profit_per_total_km_eur,
+    revenue_per_loaded_km_eur:calc.revenue_per_loaded_km_eur,cost_per_loaded_km_eur:calc.cost_per_loaded_km_eur,
+    profit_per_loaded_km_eur:calc.profit_per_loaded_km_eur,target_profit_margin_percent:calc.target_profit_margin_percent,
+    suggested_price_eur:calc.suggested_price_eur,minimum_price_eur:calc.minimum_price_eur,vat_rate_percent:calc.vat_rate_percent,
+    vat_amount_eur:calc.vat_amount_eur,total_with_vat_eur:calc.total_with_vat_eur,payment_terms_days:num(tour.payment_terms_days),
+    invoice_note:tour.invoice_note||'',internal_note:tour.internal_note||'',cancellation_reason:tour.cancellation_reason||'',
+    created_at:tour.created_at||nowIso(),updated_at:nowIso()};
+  if(isNew) table('tours').push(rec); else { var i=table('tours').findIndex(function(t){return t.tour_id===tourId;}); table('tours')[i]=rec; }
+  writeTourCosts(tourId,calc.cost_lines);
+  saveDB();
+  return {ok:true,tour_id:tourId,calc:calc};
+}
+function writeTourCosts(tourId,lines){
+  DB.tourCosts=table('tourCosts').filter(function(c){return c.tour_id!==tourId;});
+  lines.forEach(function(l,idx){ DB.tourCosts.push({tour_cost_id:tourId+'-C'+('00'+(idx+1)).slice(-3),tour_id:tourId,
+    cost_item_id:l.cost_item_id||'',cost_name_snapshot:l.name||'',category_snapshot:l.category||'',type_snapshot:l.type||'',
+    unit_snapshot:l.unit||'',quantity:l.quantity,rate_eur:l.rate_eur,amount_eur:l.amount_eur,
+    calculation_base_snapshot:l.calculation_base||'',auto_calculated:l.auto_calculated,manually_overridden:l.manually_overridden,
+    note:l.note||'',created_at:nowIso(),updated_at:nowIso()}); });
+}
+function refreshTourCosts(tourId){ // eksplicitno: ponovni obračun po AKTUELNIM stopama
+  var t=byId('tours','tour_id',tourId); if(!t) return;
+  var truck=t.truck_id?byId('trucks','truck_id',t.truck_id):null, driver=t.driver_id?byId('drivers','driver_id',t.driver_id):null;
+  var lines=buildCostLinesFromActive(t,truck,driver); var calc=calculateTourProfitability(t,lines,truck,driver);
+  writeTourCosts(tourId,calc.cost_lines);
+  Object.assign(t,{total_cost_eur:calc.total_cost_eur,gross_profit_eur:calc.gross_profit_eur,profit_margin_percent:calc.profit_margin_percent,
+    cost_per_total_km_eur:calc.cost_per_total_km_eur,profit_per_total_km_eur:calc.profit_per_total_km_eur,
+    cost_per_loaded_km_eur:calc.cost_per_loaded_km_eur,profit_per_loaded_km_eur:calc.profit_per_loaded_km_eur,updated_at:nowIso()});
+  saveDB();
+}
+/* =====================================================================
+   FILTERI I IZVEŠTAJI
+   ===================================================================== */
+function getFilteredTours(f){ f=f||{};
+  var rows=table('tours').slice();
+  var from=f.dateFrom?new Date(f.dateFrom):null, to=f.dateTo?new Date(f.dateTo):null;
+  var out=rows.filter(function(t){
+    if(f.company_id&&String(t.company_id)!==String(f.company_id)) return false;
+    if(f.status&&t.status!==f.status) return false;
+    if(f.client_id&&t.client_id!==f.client_id) return false;
+    if(f.truck_id&&t.truck_id!==f.truck_id) return false;
+    if(f.driver_id&&t.driver_id!==f.driver_id) return false;
+    if(f.route){ var r=((t.origin||'')+' '+(t.destination||'')).toLowerCase(); if(r.indexOf(String(f.route).toLowerCase())===-1) return false; }
+    if(f.minMargin!==undefined&&f.minMargin!==''&&num(t.profit_margin_percent)<num(f.minMargin)) return false;
+    if(f.onlyRealized&&t.status!=='realizovana') return false;
+    if(f.onlyCancelled&&t.status!=='otkazana') return false;
+    if(f.onlyInvoiced&&['fakturisana','naplaćena'].indexOf(t.status)===-1) return false;
+    if(f.onlyUninvoiced&&['fakturisana','naplaćena'].indexOf(t.status)!==-1) return false;
+    if(from||to){ var d=t.start_date?new Date(t.start_date):(t.loading_date?new Date(t.loading_date):null);
+      if(d&&!isNaN(d.getTime())){ if(from&&d<from) return false; if(to&&d>to) return false; } }
+    return true;
+  });
+  out.sort(function(a,b){ return new Date(b.created_at||0)-new Date(a.created_at||0); });
+  return {total:out.length,rows:out};
+}
+function getDashboard(f){
+  var tours=getFilteredTours(f).rows; var k={count:tours.length,realized:0,cancelled:0,revenue:0,cost:0,profit:0,mSum:0,mN:0,emptyKm:0,totalKm:0};
+  tours.forEach(function(t){ if(t.status==='realizovana')k.realized++; if(t.status==='otkazana')k.cancelled++;
+    k.revenue+=num(t.total_revenue_eur); k.cost+=num(t.total_cost_eur); k.profit+=num(t.gross_profit_eur);
+    if(num(t.total_revenue_eur)>0){k.mSum+=num(t.profit_margin_percent);k.mN++;} k.emptyKm+=num(t.empty_km); k.totalKm+=num(t.total_km); });
+  return {count:k.count,realized:k.realized,cancelled:k.cancelled,revenue:r2(k.revenue),cost:r2(k.cost),profit:r2(k.profit),
+    avgMargin:r2(safeDivide(k.mSum,k.mN)),avgRevenuePerKm:r2(safeDivide(k.revenue,k.totalKm)),avgCostPerKm:r2(safeDivide(k.cost,k.totalKm)),
+    avgProfitPerKm:r2(safeDivide(k.profit,k.totalKm)),emptyKm:r2(k.emptyKm),totalKm:r2(k.totalKm),emptyKmPercent:r2(safeDivide(k.emptyKm,k.totalKm)*100),
+    charts:buildCharts(tours)};
+}
+function aggregateBy(tours,field){ var map={};
+  tours.forEach(function(t){ var key=t[field]||'—'; map[key]=map[key]||{label:key,revenue:0,cost:0,profit:0,count:0,totalKm:0};
+    map[key].revenue+=num(t.total_revenue_eur); map[key].cost+=num(t.total_cost_eur); map[key].profit+=num(t.gross_profit_eur);
+    map[key].totalKm+=num(t.total_km); map[key].count++; });
+  return Object.keys(map).map(function(kk){ var m=map[kk]; return {label:m.label,count:m.count,revenue:r2(m.revenue),cost:r2(m.cost),
+    profit:r2(m.profit),margin:r2(safeDivide(m.profit,m.revenue)*100),revenuePerKm:r2(safeDivide(m.revenue,m.totalKm)),
+    costPerKm:r2(safeDivide(m.cost,m.totalKm)),profitPerKm:r2(safeDivide(m.profit,m.totalKm))}; }).sort(function(a,b){return b.profit-a.profit;});
+}
+function byCompanyReport(tours){ var map={};
+  tours.forEach(function(t){ var id=t.company_id||''; map[id]=map[id]||{rev:0,cost:0,profit:0,km:0,n:0};
+    var m=map[id]; m.rev+=num(t.total_revenue_eur); m.cost+=num(t.total_cost_eur); m.profit+=num(t.gross_profit_eur); m.km+=num(t.total_km); m.n++; });
+  var rows=Object.keys(map).map(function(id){ var m=map[id]; return {firma:companyName(id)||'(bez firme)',ture:m.n,prihod:r2(m.rev),trosak:r2(m.cost),
+    profit:r2(m.profit),marza:r2(safeDivide(m.profit,m.rev)*100),prihod_km:r2(safeDivide(m.rev,m.km)),trosak_km:r2(safeDivide(m.cost,m.km))}; }).sort(function(a,b){return b.profit-a.profit;});
+  if(rows.length){ var T={rev:0,cost:0,profit:0,km:0,n:0}; Object.keys(map).forEach(function(id){var m=map[id];T.rev+=m.rev;T.cost+=m.cost;T.profit+=m.profit;T.km+=m.km;T.n+=m.n;});
+    rows.push({firma:'ZBIRNO',ture:T.n,prihod:r2(T.rev),trosak:r2(T.cost),profit:r2(T.profit),marza:r2(safeDivide(T.profit,T.rev)*100),prihod_km:r2(safeDivide(T.rev,T.km)),trosak_km:r2(safeDivide(T.cost,T.km))}); }
+  return rows; }
+function rankTours(tours,best,n){ var s=tours.slice().sort(function(a,b){return num(b.gross_profit_eur)-num(a.gross_profit_eur);}); if(!best)s.reverse();
+  return s.slice(0,n).map(function(t){return {tour_number:t.tour_number,client:t.client_name_snapshot,route:t.origin+' → '+t.destination,
+    revenue:r2(num(t.total_revenue_eur)),cost:r2(num(t.total_cost_eur)),profit:r2(num(t.gross_profit_eur)),margin:r2(num(t.profit_margin_percent)),profitPerKm:r2(num(t.profit_per_total_km_eur))};}); }
+function monthsAgg(tours){ var bm={};
+  tours.forEach(function(t){ var d=t.start_date?new Date(t.start_date):(t.created_at?new Date(t.created_at):null);
+    var key=(d&&!isNaN(d.getTime()))?d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2):'n/a';
+    bm[key]=bm[key]||{revenue:0,cost:0,profit:0,count:0}; bm[key].revenue+=num(t.total_revenue_eur); bm[key].cost+=num(t.total_cost_eur);
+    bm[key].profit+=num(t.gross_profit_eur); bm[key].count++; });
+  return Object.keys(bm).sort().map(function(m){return {month:m,count:bm[m].count,revenue:r2(bm[m].revenue),cost:r2(bm[m].cost),profit:r2(bm[m].profit),margin:r2(safeDivide(bm[m].profit,bm[m].revenue)*100)};}); }
+function costByCategory(tours){ var ids={}; tours.forEach(function(t){ids[t.tour_id]=true;});
+  var rows=table('tourCosts').filter(function(c){return ids[c.tour_id];}); var map={};
+  rows.forEach(function(c){ var cat=c.category_snapshot||'ostalo'; map[cat]=(map[cat]||0)+num(c.amount_eur); });
+  var total=0; Object.keys(map).forEach(function(k){total+=map[k];});
+  return Object.keys(map).map(function(k){return {category:k,amount:r2(map[k]),percent:r2(safeDivide(map[k],total)*100)};}).sort(function(a,b){return b.amount-a.amount;}); }
+function fixedVsVariable(tours){ var ids={}; tours.forEach(function(t){ids[t.tour_id]=true;});
+  var rows=table('tourCosts').filter(function(c){return ids[c.tour_id];}); var fixedTypes=['fixed_per_tour','per_day']; var fx=0,vr=0;
+  rows.forEach(function(c){ if(fixedTypes.indexOf(c.type_snapshot)!==-1)fx+=num(c.amount_eur); else vr+=num(c.amount_eur); });
+  return {fixed:r2(fx),variable:r2(vr),fixedPercent:r2(safeDivide(fx,fx+vr)*100),variablePercent:r2(safeDivide(vr,fx+vr)*100)}; }
+function buildCharts(tours){ var ids={}; tours.forEach(function(t){ids[t.tour_id]=true;});
+  var byStatus={}; tours.forEach(function(t){byStatus[t.status]=(byStatus[t.status]||0)+1;});
+  return {monthly:monthsAgg(tours),byClient:aggregateBy(tours,'client_name_snapshot'),byTruck:aggregateBy(tours,'truck_plate_snapshot'),
+    byStatus:Object.keys(byStatus).map(function(s){return {label:s,value:byStatus[s]};}),costStructure:costByCategory(tours).map(function(c){return {label:c.category,value:c.amount};}),
+    topTours:rankTours(tours,true,10)}; }
+function mapTourRow(t){ return {broj:t.tour_number,klijent:t.client_name_snapshot,relacija:t.origin+' → '+t.destination,status:t.status,
+  prihod:r2(num(t.total_revenue_eur)),trosak:r2(num(t.total_cost_eur)),profit:r2(num(t.gross_profit_eur)),marza:r2(num(t.profit_margin_percent))}; }
+function getReport(type,f){ var tours=getFilteredTours(f).rows;
+  switch(type){
+    case 'by_tour': return tours.map(function(t){return {broj:t.tour_number,klijent:t.client_name_snapshot,relacija:t.origin+' → '+t.destination,status:t.status,
+      prihod:r2(num(t.total_revenue_eur)),trosak:r2(num(t.total_cost_eur)),profit:r2(num(t.gross_profit_eur)),marza:r2(num(t.profit_margin_percent)),
+      prihod_km:r2(num(t.revenue_per_total_km_eur)),trosak_km:r2(num(t.cost_per_total_km_eur)),profit_km:r2(num(t.profit_per_total_km_eur)),
+      total_km:num(t.total_km),prazni_km:num(t.empty_km)};});
+    case 'by_client': return aggregateBy(tours,'client_name_snapshot');
+    case 'by_company': return byCompanyReport(tours);
+    case 'by_truck': return aggregateBy(tours,'truck_plate_snapshot');
+    case 'by_driver': return aggregateBy(tours,'driver_name_snapshot');
+    case 'by_route': return aggregateBy(tours.map(function(t){var c=Object.assign({},t);c.__r=(t.origin||'?')+' → '+(t.destination||'?');return c;}),'__r');
+    case 'by_month': return monthsAgg(tours);
+    case 'cost_by_category': return costByCategory(tours);
+    case 'fixed_vs_variable': return fixedVsVariable(tours);
+    case 'empty_km': return tours.map(function(t){return {broj:t.tour_number,kamion:t.truck_plate_snapshot,puni_km:num(t.loaded_km),prazni_km:num(t.empty_km),total_km:num(t.total_km),prazan_procenat:r2(num(t.empty_km_percent))};});
+    case 'per_km': return tours.map(function(t){return {broj:t.tour_number,relacija:t.origin+' → '+t.destination,prihod_km:r2(num(t.revenue_per_total_km_eur)),trosak_km:r2(num(t.cost_per_total_km_eur)),profit_km:r2(num(t.profit_per_total_km_eur))};});
+    case 'top10': return rankTours(tours,true,10);
+    case 'bottom10': return rankTours(tours,false,10);
+    case 'cancelled': return tours.filter(function(t){return t.status==='otkazana';}).map(mapTourRow);
+    case 'invoicing': return {invoiced:tours.filter(function(t){return ['fakturisana','naplaćena'].indexOf(t.status)!==-1;}).map(mapTourRow),uninvoiced:tours.filter(function(t){return t.status==='realizovana';}).map(mapTourRow)};
+    case 'collection': return {collected:tours.filter(function(t){return t.status==='naplaćena';}).map(mapTourRow),uncollected:tours.filter(function(t){return t.status==='fakturisana';}).map(mapTourRow)};
+    case 'conversion': var offered=tours.filter(function(t){return ['ponuda_poslata','prihvaćena','u_realizaciji','realizovana','fakturisana','naplaćena'].indexOf(t.status)!==-1;}).length;
+      var realized=tours.filter(function(t){return ['realizovana','fakturisana','naplaćena'].indexOf(t.status)!==-1;}).length;
+      return {offered:offered,realized:realized,conversionPercent:r2(safeDivide(realized,offered)*100)};
+    default: return [];
+  }
+}
+/* =====================================================================
+   UI HELPERI
+   ===================================================================== */
+var APP={view:'dashboard',charts:{}};
+function toast(m,t){ var el=document.createElement('div'); el.className='toast '+(t||''); el.textContent=m; document.getElementById('toasts').appendChild(el); setTimeout(function(){el.remove();},4000); }
+function openModal(title,body,foot){ document.getElementById('modalRoot').innerHTML='<div class="modal-bg"><div class="modal"><header><h3>'+escapeHtml(title)+'</h3><button class="btn ghost" onclick="closeModal()">✕</button></header><div class="body">'+body+'</div>'+(foot?'<footer><button class="btn sec" onclick="closeModal()">Otkaži</button>'+foot+'</footer>':'')+'</div></div>'; }
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+function val(id){ var e=document.getElementById(id); return e?e.value:''; }
+function setVal(id,v){ var e=document.getElementById(id); if(e)e.value=v; }
+function chk(id){ var e=document.getElementById(id); return e?e.checked:false; }
+function inp(id,v,type,oninput){ return '<input id="'+id+'" type="'+(type||'text')+'" value="'+escapeHtml(v===undefined?'':v)+'"'+(oninput?' oninput="'+oninput+'"':'')+'>'; }
+function ta(id,v){ return '<textarea id="'+id+'" rows="3">'+escapeHtml(v||'')+'</textarea>'; }
+function field(label,inner){ return '<div class="field"><label>'+escapeHtml(label)+'</label>'+inner+'</div>'; }
+function dateField(id,label){ return field(label,inp(id,'','date')); }
+function textField(id,label,ph){ return field(label,'<input id="'+id+'" placeholder="'+escapeHtml(ph||'')+'">'); }
+function selectHtml(id,options,selected,ph){ var o=(ph!==undefined?'<option value="">'+escapeHtml(ph)+'</option>':'');
+  o+=options.map(function(x){var v=(typeof x==='object')?x.value:x,l=(typeof x==='object')?x.label:x;return '<option value="'+escapeHtml(v)+'"'+(String(v)===String(selected)?' selected':'')+'>'+escapeHtml(l)+'</option>';}).join('');
+  return '<select id="'+id+'">'+o+'</select>'; }
+function selField(id,label,opts,ph){ return field(label,selectHtml(id,opts,'',ph)); }
+function badge(t,tone){ return '<span class="badge '+(tone||'neutral')+'">'+escapeHtml(t)+'</span>'; }
+function statusBadge(s){ return badge(s,STATUS_TONE[s]||'neutral'); }
+function kpiCard(l,v){ return '<div class="kpi"><div class="label">'+escapeHtml(l)+'</div><div class="value">'+v+'</div></div>'; }
+function aCell(l,v){ return '<div class="cell"><div class="l">'+l+'</div><div class="v">'+v+'</div></div>'; }
+function clientOpts(){ return table('clients').filter(act).map(function(c){return {value:c.client_id,label:c.client_name};}); }
+function truckOpts(){ return table('trucks').filter(act).map(function(t){return {value:t.truck_id,label:t.plate_number+' ('+(t.brand||'')+')'};}); }
+function driverOpts(){ return table('drivers').filter(act).map(function(d){return {value:d.driver_id,label:d.full_name};}); }
+function act(x){ return x.active===true||num(x.active)===1; }
+function destroyCharts(){ Object.keys(APP.charts).forEach(function(k){try{APP.charts[k].destroy();}catch(e){}}); APP.charts={}; }
+function mkChart(id,cfg){ if(typeof Chart==='undefined'){var el=document.getElementById(id);if(el)el.parentNode.innerHTML='<p class="muted center">Grafikoni zahtevaju internet (Chart.js CDN).</p>';return;} var el=document.getElementById(id); if(el)APP.charts[id]=new Chart(el.getContext('2d'),cfg); }
+function chartOpts(extra){ var o={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{labels:{boxWidth:10,usePointStyle:true,pointStyle:'circle',font:{size:11},color:'#475467'}},
+    tooltip:{backgroundColor:'#101828',padding:10,cornerRadius:8,titleFont:{size:12,weight:'600'},bodyFont:{size:12},displayColors:true,boxPadding:4}},
+  scales:{x:{grid:{display:false},ticks:{font:{size:11},color:'#667085',maxRotation:0,autoSkip:true}},
+    y:{grid:{color:'#eef0f3'},border:{display:false},ticks:{font:{size:11},color:'#667085'}}},
+  borderRadius:6,maxBarThickness:44,categoryPercentage:.75,barPercentage:.9};
+  return Object.assign(o,extra||{}); }
+function pieOpts(){ return {responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,usePointStyle:true,pointStyle:'circle',font:{size:11},color:'#475467',padding:12}},tooltip:{backgroundColor:'#101828',padding:10,cornerRadius:8}}}; }
+var CC={rev:'#2f6fb0',cost:'#e0922f',profit:'#0e9f6e',brand:'#1b3a5b',purple:'#6d5bd0',teal:'#0d9488',danger:'#d92d20',gray:'#94a3b8'};
+function dsRCP(rev,cost,profit){ return [
+  {label:'Prihod',data:rev,backgroundColor:CC.rev},
+  {label:'Trošak',data:cost,backgroundColor:CC.cost},
+  {label:'Profit',data:profit,backgroundColor:CC.profit}]; }
+function palette(n){ var b=['#1b3a5b','#2f6fb0','#0e9f6e','#c2710c','#d92d20','#6d5bd0','#0d9488','#5d6b7a','#b54aa0','#3949ab','#0891b2','#65a30d','#ea7c0c','#7e57c2','#475569']; var o=[]; for(var i=0;i<n;i++)o.push(b[i%b.length]); return o; }
+
+/* ---------- BOOT + NAV ---------- */
+window.addEventListener('load',function(){
+  CONFIG.apiUrl=loadApiUrl();
+  loadDB(function(){
+    ensureAuthUsers();
+    var s=null; try{ s=JSON.parse(sessionStorage.getItem(SESS_KEY)); }catch(e){}
+    if(s&&s.username){ CURRENT_USER=s; startApp(); } else { showLogin(); }
+  });
+});
+function ensureAuthUsers(){ var u=table('users');
+  if(!u.some(function(x){return x.username==='admin';})) u.push({user_id:uid('USR'),username:'admin',password:'admin',name:'Administrator',role:'admin',active:true,created_at:nowIso()});
+  if(!u.some(function(x){return x.username==='korisnik';})) u.push({user_id:uid('USR'),username:'korisnik',password:'korisnik',name:'Operativa',role:'korisnik',active:true,created_at:nowIso()});
+}
+function showLogin(){ var o=document.getElementById('loginOverlay'); if(o)o.style.display='flex';
+  var p=document.getElementById('loginPass'); if(p)p.onkeydown=function(e){ if(e.key==='Enter')doLogin(); }; }
+function doLogin(){ var u=val('loginUser').trim(), p=val('loginPass');
+  var rec=table('users').filter(function(x){return x.username===u&&String(x.password)===String(p)&&x.active!==false;})[0];
+  if(!rec){ document.getElementById('loginErr').textContent='Pogrešno korisničko ime ili lozinka.'; return; }
+  CURRENT_USER={user_id:rec.user_id,username:rec.username,name:rec.name,role:rec.role};
+  try{ sessionStorage.setItem(SESS_KEY,JSON.stringify(CURRENT_USER)); }catch(e){}
+  document.getElementById('loginOverlay').style.display='none'; startApp(); }
+function logout(){ CURRENT_USER=null; try{sessionStorage.removeItem(SESS_KEY);}catch(e){}
+  var p=document.getElementById('loginPass'); if(p)p.value=''; showLogin(); }
+function startApp(){ renderNav(); renderWho(); navigate('dashboard'); }
+
+function renderNav(){ var items=[['dashboard','Dashboard','📊'],['tours','Ture','🚚'],['newtour','Nova tura','➕'],['docs','Dokumenti','📄'],['reports','Izveštaji','📈'],['admin','Administracija','⚙️']];
+  if(!isAdmin()) items=items.filter(function(i){return i[0]!=='admin';});
+  document.getElementById('nav').innerHTML=items.map(function(i){return '<button data-v="'+i[0]+'" onclick="navigate(\''+i[0]+'\')">'+i[2]+' <span>'+i[1]+'</span></button>';}).join(''); }
+function renderWho(){ var badge='<span id="cloudBadge" class="tag '+(ONLINE?'success':'neutral')+'">'+(ONLINE?'● Google Sheets':'● Lokalno')+'</span>';
+  document.getElementById('who').innerHTML='<b>'+escapeHtml(CURRENT_USER?CURRENT_USER.name:'')+'</b><br><span class="tag">'+escapeHtml(CURRENT_USER?CURRENT_USER.role:'')+'</span> '+badge+
+    '<br><button class="btn sec sm" style="margin-top:8px" onclick="logout()">Odjava</button>'+
+    (isAdmin()?' <button class="btn sec sm" style="margin-top:8px" onclick="resetDemo()">Reset demo</button>':''); }
+function resetDemo(){ if(confirm('Obrisati lokalne podatke i vratiti demo? (Ako si povezan na Google Sheets, oblak ostaje netaknut dok ne sačuvaš.)')){ localStorage.removeItem(DB_KEY); CONFIG.apiUrl=''; saveApiUrl(''); loadDB(function(){ensureAuthUsers();setOnline(false);navigate('dashboard');toast('Demo resetovan (lokalno).','ok');}); } }
+function navigate(v){ if(v==='admin'&&!isAdmin()){ v='dashboard'; }
+  APP.view=v; document.querySelectorAll('.nav button').forEach(function(b){b.classList.toggle('active',b.dataset.v===v);});
+  document.getElementById('topActions').innerHTML=''; var titles={dashboard:'Dashboard',tours:'Ture',newtour:'Nova tura / ponuda',docs:'Dokumenti',reports:'Izveštaji',admin:'Administracija'};
+  document.getElementById('viewTitle').textContent=titles[v]||v;
+  ({dashboard:viewDashboard,tours:viewTours,newtour:function(){viewNewTour();},docs:viewDocs,reports:viewReports,admin:viewAdmin}[v])(); }
+
+/* ---------- DASHBOARD ---------- */
+function viewDashboard(){ document.getElementById('content').innerHTML='<div class="panel"><div class="filters">'+
+  '<div class="field"><label>Firma</label>'+selE('dashCompany',companyOpts(),'','ZBIRNO (sve)')+'</div>'+
+  dateField('dashFrom','Period od')+dateField('dashTo','Period do')+
+  '<div class="field"><label>&nbsp;</label><button class="btn" onclick="loadDashboard()">Primeni</button></div></div></div><div id="dashBody"></div>';
+  loadDashboard(); }
+function loadDashboard(){ var d=getDashboard({company_id:val('dashCompany'),dateFrom:val('dashFrom'),dateTo:val('dashTo')});
+  var k='<div class="grid kpis">'+kpiCard('Broj tura',d.count)+kpiCard('Realizovane',d.realized)+kpiCard('Otkazane',d.cancelled)+
+    kpiCard('Ukupan prihod',eur(d.revenue))+kpiCard('Ukupan trošak',eur(d.cost))+kpiCard('Bruto profit',eur(d.profit))+
+    kpiCard('Prosečna marža',pct(d.avgMargin))+kpiCard('Prihod/km',eurKm(d.avgRevenuePerKm))+kpiCard('Trošak/km',eurKm(d.avgCostPerKm))+
+    kpiCard('Profit/km',eurKm(d.avgProfitPerKm))+kpiCard('Prazni km',fmtN(d.emptyKm,0))+kpiCard('Prazan %',pct(d.emptyKmPercent))+'</div>';
+  var ch='<div class="grid" style="grid-template-columns:1fr 1fr">'+
+    cp('Prihod / trošak / profit po mesecu','chMonthly')+cp('Struktura troškova po kategoriji','chCost')+
+    cp('Profit po klijentu','chClient')+cp('Profit po kamionu','chTruck')+cp('Statusi tura','chStatus')+cp('Top 10 tura po profitu','chTop')+'</div>';
+  document.getElementById('dashBody').innerHTML=k+ch; drawDash(d.charts);
+  function cp(t,id){return '<div class="panel"><h2>'+t+'</h2><div class="chart-box"><canvas id="'+id+'"></canvas></div></div>';} }
+function drawDash(ch){ destroyCharts();
+  mkChart('chMonthly',{type:'line',data:{labels:ch.monthly.map(function(m){return m.month;}),datasets:[
+    {label:'Prihod',data:ch.monthly.map(function(m){return m.revenue;}),borderColor:'#1769aa',tension:.3},
+    {label:'Trošak',data:ch.monthly.map(function(m){return m.cost;}),borderColor:'#c0392b',tension:.3},
+    {label:'Profit',data:ch.monthly.map(function(m){return m.profit;}),borderColor:'#1f9d57',tension:.3}]},options:chartOpts()});
+  mkChart('chCost',{type:'doughnut',data:{labels:ch.costStructure.map(function(x){return x.label;}),datasets:[{data:ch.costStructure.map(function(x){return x.value;}),backgroundColor:palette(ch.costStructure.length)}]},options:{responsive:true,maintainAspectRatio:false}});
+  mkChart('chClient',{type:'bar',data:{labels:ch.byClient.slice(0,8).map(function(x){return x.label;}),datasets:[{label:'Profit',data:ch.byClient.slice(0,8).map(function(x){return x.profit;}),backgroundColor:'#0f4c81'}]},options:chartOpts()});
+  mkChart('chTruck',{type:'bar',data:{labels:ch.byTruck.map(function(x){return x.label;}),datasets:[{label:'Profit',data:ch.byTruck.map(function(x){return x.profit;}),backgroundColor:'#1769aa'}]},options:chartOpts()});
+  mkChart('chStatus',{type:'pie',data:{labels:ch.byStatus.map(function(x){return x.label;}),datasets:[{data:ch.byStatus.map(function(x){return x.value;}),backgroundColor:palette(ch.byStatus.length)}]},options:{responsive:true,maintainAspectRatio:false}});
+  mkChart('chTop',{type:'bar',data:{labels:ch.topTours.map(function(x){return x.tour_number;}),datasets:[{label:'Profit',data:ch.topTours.map(function(x){return x.profit;}),backgroundColor:'#1f9d57'}]},options:Object.assign(chartOpts(),{indexAxis:'y'})}); }
+/* ---------- TURE ---------- */
+function viewTours(){ document.getElementById('topActions').innerHTML='<button class="btn" onclick="navigate(\'newtour\')">+ Nova tura</button>';
+  document.getElementById('content').innerHTML='<div class="panel"><div class="filters">'+
+    selField('fCompany','Firma',companyOpts(),'Sve firme')+
+    dateField('fFrom','Od')+dateField('fTo','Do')+selField('fStatus','Status',[''].concat(TOUR_STATUS),'Svi')+
+    selField('fClient','Klijent',clientOpts(),'Svi')+selField('fTruck','Kamion',truckOpts(),'Svi')+
+    selField('fDriver','Vozač',driverOpts(),'Svi')+textField('fRoute','Relacija','npr. Beograd')+textField('fMargin','Min. marža %','')+
+    '</div><div class="flex wrap" style="margin-top:12px">'+
+    '<label class="flex"><input type="checkbox" id="fReal" style="width:auto"> Realizovane</label>'+
+    '<label class="flex"><input type="checkbox" id="fCanc" style="width:auto"> Otkazane</label>'+
+    '<label class="flex"><input type="checkbox" id="fInv" style="width:auto"> Fakturisane</label>'+
+    '<label class="flex"><input type="checkbox" id="fUninv" style="width:auto"> Nefakturisane</label>'+
+    '<button class="btn" onclick="loadTours()">Primeni</button><button class="btn sec" onclick="resetTF()">Resetuj</button>'+
+    '<button class="btn sec no-print" onclick="window.print()">Štampa (A4)</button></div></div><div id="toursBody"></div>';
+  loadTours(); }
+function resetTF(){ ['fFrom','fTo','fRoute','fMargin','fStatus','fClient','fTruck','fDriver','fCompany'].forEach(function(i){setVal(i,'');});
+  ['fReal','fCanc','fInv','fUninv'].forEach(function(i){var e=document.getElementById(i);if(e)e.checked=false;}); loadTours(); }
+function loadTours(){ var f={company_id:val('fCompany'),dateFrom:val('fFrom'),dateTo:val('fTo'),status:val('fStatus'),client_id:val('fClient'),truck_id:val('fTruck'),
+    driver_id:val('fDriver'),route:val('fRoute'),minMargin:val('fMargin'),onlyRealized:chk('fReal'),onlyCancelled:chk('fCanc'),onlyInvoiced:chk('fInv'),onlyUninvoiced:chk('fUninv')};
+  var res=getFilteredTours(f), rows=res.rows;
+  if(!rows.length){ document.getElementById('toursBody').innerHTML='<div class="panel muted">Nema tura za zadate filtere. Probajte „Resetuj" ili dodajte turu.</div>'; return; }
+  var head=['Broj','Firma','Status','Klijent','Relacija','Datum','Km','Prihod','Trošak','Profit','Marža','Akcije'];
+  var numCols=['Km','Prihod','Trošak','Profit','Marža'];
+  var statusOpts=function(cur){ return TOUR_STATUS.map(function(s){return '<option value="'+s+'"'+(s===cur?' selected':'')+'>'+s+'</option>';}).join(''); };
+  var coShort=function(id){ var c=(DB.companies||[]).filter(function(x){return x.company_id===id;})[0]; return c?(c.short||c.name):''; };
+  var body=rows.map(function(t){ return '<tr><td><b>'+escapeHtml(t.tour_number)+'</b></td>'+
+    '<td><span class="tag">'+escapeHtml(coShort(t.company_id))+'</span></td>'+
+    '<td><select class="statussel no-print" onchange="changeStatusInline(\''+t.tour_id+'\',this.value)">'+statusOpts(t.status)+'</select></td>'+
+    '<td>'+escapeHtml(t.client_name_snapshot)+'</td><td>'+escapeHtml(t.origin)+' → '+escapeHtml(t.destination)+'</td>'+
+    '<td>'+dateSr(t.loading_date||t.start_date)+'</td>'+
+    '<td class="num">'+fmtN(num(t.total_km),0)+'</td>'+
+    '<td class="num">'+eur(t.total_revenue_eur)+'</td><td class="num">'+eur(t.total_cost_eur)+'</td>'+
+    '<td class="num">'+eur(t.gross_profit_eur)+'</td><td class="num">'+pct(t.profit_margin_percent)+'</td>'+
+    '<td><div class="actions no-print">'+
+      '<button class="btn sm sec" onclick="openTour(\''+t.tour_id+'\')">Detalji</button>'+
+      '<button class="btn sm sec" onclick="editTour(\''+t.tour_id+'\')">Izmeni</button>'+
+      '<button class="btn sm sec" onclick="copyTourUi(\''+t.tour_id+'\')">Kopiraj</button>'+
+      '<button class="btn sm" onclick="pdfOffer(\''+t.tour_id+'\')">Ponuda</button>'+
+      '<button class="btn sm" onclick="pdfClientOrder(\''+t.tour_id+'\')">Nalog</button>'+
+      '<button class="btn sm danger" onclick="deleteTour(\''+t.tour_id+'\')">Briši</button>'+
+    '</div></td></tr>'; }).join('');
+  document.getElementById('toursBody').innerHTML='<div class="panel"><h2>Ture ('+res.total+')</h2><div class="table-wrap"><table class="data tight"><thead><tr>'+
+    head.map(function(h){return '<th class="'+(numCols.indexOf(h)>-1?'num':'')+'">'+h+'</th>';}).join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>'+
+    '<p class="muted" style="margin-top:8px">Status menjaš direktno u koloni „Status". „Detalji" prikazuje pun obračun i troškove.</p></div>'; }
+function changeStatusInline(id,s){ var t=byId('tours','tour_id',id); if(!t)return;
+  if(s==='otkazana'){ var r=prompt('Razlog otkazivanja:'); t.cancellation_reason=r||''; }
+  t.status=s; t.updated_at=nowIso(); saveDB(); toast('Status: '+s,'ok'); }
+function deleteTour(id){ var t=byId('tours','tour_id',id); if(!t)return;
+  if(!confirm('Obrisati turu '+t.tour_number+'? Brišu se i njeni troškovi i dokumenti. Ova akcija je trajna.')) return;
+  DB.tours=table('tours').filter(function(x){return x.tour_id!==id;});
+  DB.tourCosts=table('tourCosts').filter(function(x){return x.tour_id!==id;});
+  DB.documents=table('documents').filter(function(x){return x.tour_id!==id;});
+  saveDB(); toast('Tura obrisana.','ok'); loadTours(); }
+
+function openTour(id){ var t=byId('tours','tour_id',id); var costs=table('tourCosts').filter(function(c){return c.tour_id===id;});
+  var docs=table('documents').filter(function(d){return d.tour_id===id;});
+  var costRows=costs.map(function(c){return '<tr><td>'+escapeHtml(c.cost_name_snapshot)+'</td><td>'+escapeHtml(c.category_snapshot)+'</td>'+
+    '<td class="num">'+fmtN(num(c.quantity),2)+'</td><td class="num">'+eur(c.rate_eur)+'</td><td class="num">'+eur(c.amount_eur)+'</td>'+
+    '<td>'+(c.manually_overridden?badge('ručno','warn'):'')+'</td></tr>';}).join('');
+  var st=profitabilityStatus(num(t.profit_margin_percent),num(t.target_profit_margin_percent));
+  var body='<div class="analysis">'+aCell('Ukupan prihod',eur(t.total_revenue_eur))+aCell('Ukupan trošak',eur(t.total_cost_eur))+
+    aCell('Profit',eur(t.gross_profit_eur))+aCell('Marža',pct(t.profit_margin_percent))+
+    aCell('Prihod/km',eurKm(t.revenue_per_total_km_eur))+aCell('Trošak/km',eurKm(t.cost_per_total_km_eur))+
+    aCell('Profit/km',eurKm(t.profit_per_total_km_eur))+aCell('Loaded km',fmtN(num(t.loaded_km),0))+
+    aCell('Empty km',fmtN(num(t.empty_km),0))+aCell('Total km',fmtN(num(t.total_km),0))+aCell('Prazan %',pct(t.empty_km_percent))+
+    aCell('PDV ('+pct(t.vat_rate_percent)+')',eur(t.vat_amount_eur))+'</div>'+
+    '<p style="margin-top:10px">Firma (nosilac): <b>'+escapeHtml(companyName(t.company_id))+'</b> &nbsp; Status: '+statusBadge(t.status)+' &nbsp; Profitabilnost: '+badge(st.label,st.tone)+'</p>'+
+    '<h2 style="margin-top:14px">Troškovi — snapshot (zamrznuto pri čuvanju)</h2><div class="table-wrap"><table class="data"><thead><tr><th>Stavka</th><th>Kategorija</th><th class="num">Kol.</th><th class="num">Stopa</th><th class="num">Iznos</th><th></th></tr></thead><tbody>'+costRows+'</tbody></table></div>'+
+    (docs.length?'<h2 style="margin-top:14px">Dokumenti</h2>'+docs.map(function(x){return '<div>📄 '+escapeHtml(x.document_type)+' '+escapeHtml(x.document_number||'')+' — '+dateSr(x.generated_at)+'</div>';}).join(''):'');
+  var foot='<div class="flex">'+selectHtml('detStatus',TOUR_STATUS,t.status)+'<button class="btn sm" onclick="changeStatus(\''+id+'\')">Promeni status</button></div>'+
+    '<button class="btn sm sec" onclick="editTour(\''+id+'\')">Izmeni</button>'+
+    '<button class="btn sm sec" onclick="copyTourUi(\''+id+'\')">Kopiraj</button>'+
+    '<button class="btn sm sec" onclick="refreshCostsUi(\''+id+'\')">Osveži troškove</button>'+
+    '<button class="btn sm" onclick="pdfOffer(\''+id+'\')">PDF ponuda</button>'+
+    '<button class="btn sm" onclick="pdfClientOrder(\''+id+'\')">PDF nalog</button>'+
+    '<button class="btn sm" onclick="pdfInternal(\''+id+'\')">Interni nalog</button>';
+  openModal('Tura '+t.tour_number,body,foot); }
+function changeStatus(id){ var t=byId('tours','tour_id',id); var s=val('detStatus'); if(s==='otkazana')t.cancellation_reason=prompt('Razlog otkazivanja:')||'';
+  t.status=s; t.updated_at=nowIso(); saveDB(); toast('Status promenjen.','ok'); closeModal(); loadTours(); }
+function copyTourUi(id){ var src=byId('tours','tour_id',id); var c=JSON.parse(JSON.stringify(src)); delete c.tour_id; delete c.tour_number; c.status='priprema'; c.quote_number=''; c.order_number='';
+  c.cost_lines=table('tourCosts').filter(function(x){return x.tour_id===id;}).map(function(x){return {cost_item_id:x.cost_item_id,name:x.cost_name_snapshot,category:x.category_snapshot,type:x.type_snapshot,unit:x.unit_snapshot,rate_eur:num(x.rate_eur),amount_eur:num(x.amount_eur),quantity:num(x.quantity),calculation_base:x.calculation_base_snapshot,manually_overridden:!!x.manually_overridden};});
+  var res=saveTourCore(c); toast('Tura kopirana: '+byId('tours','tour_id',res.tour_id).tour_number,'ok'); closeModal(); loadTours(); }
+function refreshCostsUi(id){ refreshTourCosts(id); toast('Troškovi osveženi po aktuelnim stopama.','ok'); openTour(id); }
+
+/* =====================================================================
+   PDF DOKUMENTI (štampa kroz iframe → "Sačuvaj kao PDF")
+   ===================================================================== */
+function printDoc(fileName,inner){
+  var s=DB.settings;
+  var css='@page{size:A4;margin:18mm 16mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;font-size:11pt;line-height:1.45;margin:0}'+
+    'h1{font-size:18pt;margin:0 0 2mm}h2{font-size:13pt;margin:6mm 0 2mm;border-bottom:1px solid #ccc;padding-bottom:1mm}'+
+    '.muted{color:#666;font-size:9.5pt}.right{text-align:right}.head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6mm}'+
+    '.box{border:1px solid #ddd;padding:3mm;border-radius:2mm}table{width:100%;border-collapse:collapse;margin-top:2mm}'+
+    'th,td{border:1px solid #ddd;padding:2mm 2.5mm;text-align:left;font-size:10pt}th{background:#f3f4f6}td.num,th.num{text-align:right}'+
+    '.totals td{border:none;padding:1mm 2.5mm}.totals .grand{font-weight:bold;font-size:12pt;border-top:2px solid #333}'+
+    '.sign{margin-top:14mm;display:flex;justify-content:space-between}.sign div{width:45%;border-top:1px solid #333;padding-top:1mm;text-align:center;font-size:9.5pt}'+
+    '.footer{margin-top:10mm;color:#666;font-size:9pt;text-align:center;border-top:1px solid #eee;padding-top:2mm}';
+  var html='<!DOCTYPE html><html lang="sr"><head><meta charset="utf-8"><title>'+escapeHtml(fileName)+'</title><style>'+css+'</style></head><body>'+inner+'</body></html>';
+  var ifr=document.createElement('iframe'); ifr.style.position='fixed'; ifr.style.right='0'; ifr.style.bottom='0'; ifr.style.width='0'; ifr.style.height='0'; ifr.style.border='0';
+  document.body.appendChild(ifr);
+  var doc=ifr.contentWindow.document; doc.open(); doc.write(html); doc.close();
+  setTimeout(function(){ ifr.contentWindow.focus(); ifr.contentWindow.print(); setTimeout(function(){ifr.remove();},1000); },350);
+}
+function companyHead(co){ co=co||companyById(defaultCompanyId()); return '<div class="head"><div><h1>'+escapeHtml(co.name)+'</h1>'+
+  '<div class="muted">'+escapeHtml(co.address||'')+', '+escapeHtml(co.city||'')+', '+escapeHtml(co.country||'')+'<br>'+
+  'PIB: '+escapeHtml(co.pib||'')+' · Mat: '+escapeHtml(co.registration_number||'')+' · PDV: '+escapeHtml(co.vat_number||'')+'<br>'+
+  escapeHtml(co.email||'')+' · '+escapeHtml(co.phone||'')+'</div></div>'; }
+function clientBox(c){ if(!c) return '<div class="box">Klijent nije izabran.</div>';
+  return '<div class="box"><strong>'+escapeHtml(c.legal_name||c.client_name)+'</strong><br>'+escapeHtml(c.address||'')+', '+escapeHtml(c.city||'')+', '+escapeHtml(c.country||'')+'<br>'+
+    'PIB/VAT: '+escapeHtml(c.pib_vat||'')+(c.registration_number?' · Mat: '+escapeHtml(c.registration_number):'')+'<br>'+(c.billing_email?'Email za fakture: '+escapeHtml(c.billing_email):'')+'</div>'; }
+function recordDoc(tourId,type,number){ table('documents').push({document_id:uid('DOC'),tour_id:tourId,document_type:type,document_number:number||'',generated_at:nowIso()}); saveDB(); }
+
+/* 1) PONUDA — bez internih troškova/profita/marže */
+function pdfOffer(id){ var t=byId('tours','tour_id',id); if(!t.client_id){toast('Klijent je obavezan za ponudu.','err');return;}
+  var co=companyById(t.company_id), c=byId('clients','client_id',t.client_id); var number=t.quote_number||('PON-'+t.tour_number); t.quote_number=number; saveDB();
+  var cur=clientCurrency(c); var rnote=cur==='DIN'?(' (kurs '+fmtN(eurRate(),2)+' RSD/€)'):'';
+  var inner=companyHead(co)+'<div class="right"><h2 style="border:none">PONUDA</h2>Broj: <strong>'+escapeHtml(number)+'</strong><br>Datum: '+dateSr(new Date())+'</div></div>'+
+    '<h2>Naručilac</h2>'+clientBox(c)+'<h2>Predmet ponude</h2><table>'+
+    '<tr><th>Relacija</th><td>'+escapeHtml(t.origin)+' → '+escapeHtml(t.destination)+'</td></tr>'+
+    '<tr><th>Utovar</th><td>'+escapeHtml(t.loading_address)+' ('+dateSr(t.loading_date)+')</td></tr>'+
+    '<tr><th>Istovar</th><td>'+escapeHtml(t.unloading_address)+' ('+dateSr(t.unloading_date)+')</td></tr>'+
+    '<tr><th>Roba</th><td>'+escapeHtml(t.cargo_description)+'</td></tr></table>'+
+    '<h2>Cena</h2><table class="totals">'+
+    '<tr><td>Cena bez PDV-a</td><td class="num">'+moneyDoc(t.total_revenue_eur,cur)+'</td></tr>'+
+    '<tr><td>PDV ('+pct(t.vat_rate_percent)+')</td><td class="num">'+moneyDoc(t.vat_amount_eur,cur)+'</td></tr>'+
+    '<tr class="grand"><td>Ukupno sa PDV-om</td><td class="num">'+moneyDoc(t.total_with_vat_eur,cur)+'</td></tr></table>'+
+    '<p class="muted">Valuta: '+(cur==='DIN'?'RSD':'EUR')+rnote+' · Rok plaćanja: '+escapeHtml(t.payment_terms_days)+' dana<br>Račun: '+escapeHtml(co.bank_account||'')+' · IBAN: '+escapeHtml(co.iban||'')+' · SWIFT: '+escapeHtml(co.swift||'')+'</p>'+
+    (t.invoice_note?'<p>'+escapeHtml(t.invoice_note)+'</p>':'')+
+    '<div class="sign"><div>Za naručioca</div><div>Za '+escapeHtml(co.name)+'</div></div><div class="footer">'+escapeHtml(co.footer_text||DB.settings.pdf_footer_text||'')+'</div>';
+  recordDoc(id,'ponuda_klijentu',number); printDoc('Ponuda_'+number,inner); toast('Ponuda spremna — u dijalogu izaberite „Sačuvaj kao PDF".','ok'); }
+
+/* 2) NALOG ZA KLIJENTA — svi podaci za fakturisanje, bez troškova/profita */
+function pdfClientOrder(id){ var t=byId('tours','tour_id',id); if(!t.client_id){toast('Klijent je obavezan.','err');return;}
+  var co=companyById(t.company_id), c=byId('clients','client_id',t.client_id); var number=t.order_number||('NAL-'+t.tour_number); t.order_number=number; saveDB();
+  var cur=clientCurrency(c); var rnote=cur==='DIN'?(' (kurs '+fmtN(eurRate(),2)+' RSD/€)'):'';
+  var inner=companyHead(co)+'<div class="right"><h2 style="border:none">NALOG ZA KLIJENTA</h2>Broj: <strong>'+escapeHtml(number)+'</strong>'+(t.quote_number?'<br>Ref. ponuda: '+escapeHtml(t.quote_number):'')+'<br>Datum: '+dateSr(new Date())+'</div></div>'+
+    '<h2>Klijent (podaci za fakturu)</h2>'+clientBox(c)+'<h2>Usluga transporta</h2><table>'+
+    '<tr><th>Relacija</th><td>'+escapeHtml(t.origin)+' → '+escapeHtml(t.destination)+'</td></tr>'+
+    '<tr><th>Datumi</th><td>'+dateSr(t.loading_date||t.start_date)+' – '+dateSr(t.unloading_date||t.end_date)+'</td></tr>'+
+    '<tr><th>Vozilo</th><td>'+escapeHtml(t.truck_plate_snapshot)+(t.trailer_plate_snapshot?' / '+escapeHtml(t.trailer_plate_snapshot):'')+'</td></tr>'+
+    '<tr><th>Opis</th><td>'+escapeHtml(t.cargo_description)+'</td></tr></table>'+
+    '<h2>Iznos za fakturisanje</h2><table class="totals">'+
+    '<tr><td>Osnovica (bez PDV-a)</td><td class="num">'+moneyDoc(t.total_revenue_eur,cur)+'</td></tr>'+
+    '<tr><td>PDV ('+pct(t.vat_rate_percent)+')</td><td class="num">'+moneyDoc(t.vat_amount_eur,cur)+'</td></tr>'+
+    '<tr class="grand"><td>Ukupno za naplatu</td><td class="num">'+moneyDoc(t.total_with_vat_eur,cur)+'</td></tr></table>'+
+    '<p class="muted">Uslovi plaćanja: '+escapeHtml(t.payment_terms_days)+' dana · Valuta: '+(cur==='DIN'?'RSD':'EUR')+rnote+'<br>IBAN: '+escapeHtml(co.iban||'')+' · SWIFT: '+escapeHtml(co.swift||'')+' · Račun: '+escapeHtml(co.bank_account||'')+'<br>Izdavalac: '+escapeHtml(co.name)+', PIB '+escapeHtml(co.pib||'')+', PDV '+escapeHtml(co.vat_number||'')+'</p>'+
+    (t.invoice_note?'<p>'+escapeHtml(t.invoice_note)+'</p>':'')+'<div class="footer">'+escapeHtml(co.footer_text||DB.settings.pdf_footer_text||'')+'</div>';
+  recordDoc(id,'nalog_za_klijenta',number); printDoc('Nalog_klijent_'+number,inner); toast('Nalog spreman — „Sačuvaj kao PDF".','ok'); }
+
+/* 3) INTERNI NALOG — pun prikaz troškova/profita/marže (interno) */
+function pdfInternal(id){ var t=byId('tours','tour_id',id); var s=DB.settings; var costs=table('tourCosts').filter(function(c){return c.tour_id===id;});
+  var costRows=costs.map(function(c){return '<tr><td>'+escapeHtml(c.cost_name_snapshot)+'</td><td>'+escapeHtml(c.category_snapshot)+'</td>'+
+    '<td class="num">'+fmtN(num(c.quantity),2)+'</td><td class="num">'+eur(c.rate_eur)+'</td><td class="num">'+eur(c.amount_eur)+'</td></tr>';}).join('');
+  var inner=companyHead(companyById(t.company_id))+'<div class="right"><h2 style="border:none">INTERNI NALOG ZA TURU</h2>Tura: <strong>'+escapeHtml(t.tour_number)+'</strong><br>Status: '+escapeHtml(t.status)+'<br>Firma: '+escapeHtml(companyName(t.company_id))+'<br>Datum: '+dateSr(new Date())+'</div></div>'+
+    '<h2>Osnovni podaci</h2><table><tr><th>Klijent</th><td>'+escapeHtml(t.client_name_snapshot)+'</td><th>Relacija</th><td>'+escapeHtml(t.origin)+' → '+escapeHtml(t.destination)+'</td></tr>'+
+    '<tr><th>Kamion</th><td>'+escapeHtml(t.truck_plate_snapshot)+' / '+escapeHtml(t.trailer_plate_snapshot)+'</td><th>Vozač</th><td>'+escapeHtml(t.driver_name_snapshot)+'</td></tr></table>'+
+    '<h2>Kilometraža</h2><table><tr><th class="num">Loaded km</th><th class="num">Empty km</th><th class="num">Total km</th><th class="num">Prazan %</th></tr>'+
+    '<tr><td class="num">'+fmtN(num(t.loaded_km),0)+'</td><td class="num">'+fmtN(num(t.empty_km),0)+'</td><td class="num">'+fmtN(num(t.total_km),0)+'</td><td class="num">'+pct(t.empty_km_percent)+'</td></tr></table>'+
+    '<h2>Troškovi po stavkama</h2><table><tr><th>Stavka</th><th>Kategorija</th><th class="num">Količina</th><th class="num">Stopa</th><th class="num">Iznos</th></tr>'+costRows+'</table>'+
+    '<h2>Rezultat (interno)</h2><table class="totals">'+
+    '<tr><td>Ukupan prihod</td><td class="num">'+eur(t.total_revenue_eur)+'</td></tr>'+
+    '<tr><td>Ukupan trošak</td><td class="num">'+eur(t.total_cost_eur)+'</td></tr>'+
+    '<tr class="grand"><td>Profit (marža '+pct(t.profit_margin_percent)+')</td><td class="num">'+eur(t.gross_profit_eur)+'</td></tr>'+
+    '<tr><td>Prihod/km</td><td class="num">'+eurKm(t.revenue_per_total_km_eur)+'</td></tr>'+
+    '<tr><td>Trošak/km</td><td class="num">'+eurKm(t.cost_per_total_km_eur)+'</td></tr>'+
+    '<tr><td>Profit/km</td><td class="num">'+eurKm(t.profit_per_total_km_eur)+'</td></tr></table>'+
+    (t.internal_note?'<p class="muted">Napomena: '+escapeHtml(t.internal_note)+'</p>':'')+'<div class="footer">Interni dokument — nije za klijenta.</div>';
+  recordDoc(id,'interni_nalog',t.tour_number); printDoc('Interni_nalog_'+t.tour_number,inner); toast('Interni nalog spreman — „Sačuvaj kao PDF".','ok'); }
+/* ---------- NOVA TURA — kompaktna forma (1 ekran) + brzo dodavanje ---------- */
+var FORM=null;
+var FORM_IDS=['company_id','client_id','status','origin','destination','loading_address','unloading_address','loading_date','unloading_date','days','cargo_description','cargo_weight_kg','truck_id','driver_id','loaded_km','empty_km','freight_revenue_eur','fuel_surcharge_eur','other_revenue_eur','vat_rate_percent','payment_terms_days','target_profit_margin_percent','invoice_note','internal_note'];
+function viewNewTour(editData){
+  FORM={ data: editData || {status:'priprema',vat_rate_percent:DB.settings.default_vat_rate,target_profit_margin_percent:DB.settings.default_profit_margin_percent,payment_terms_days:DB.settings.default_payment_terms_days},
+         costLines: (editData&&editData.cost_lines)?editData.cost_lines:null, editing: !!(editData&&editData.tour_id) };
+  document.getElementById('viewTitle').textContent = FORM.editing ? ('Izmena ture '+(editData.tour_number||'')) : 'Nova tura / ponuda';
+  formRender();
+}
+function formCollect(){ var d=FORM.data; FORM_IDS.forEach(function(k){ var el=document.getElementById('f_'+k); if(el)d[k]=el.value; }); }
+function formEnsureCosts(){ if(!FORM.costLines){ var tr=byId('trucks','truck_id',FORM.data.truck_id),dr=byId('drivers','driver_id',FORM.data.driver_id); FORM.costLines=buildCostLinesFromActive(FORM.data,tr,dr); } }
+function formVehicleChange(){ formCollect();
+  if(!FORM.data.company_id){ var tr=byId('trucks','truck_id',FORM.data.truck_id),dr=byId('drivers','driver_id',FORM.data.driver_id);
+    if(tr&&tr.company_id)FORM.data.company_id=tr.company_id; else if(dr&&dr.company_id)FORM.data.company_id=dr.company_id; }
+  FORM.costLines=null; formRender(); }
+function relOptions(){ return table('relations').map(function(r,i){return {value:String(i),label:(r.from||'?')+' → '+(r.to||'?')};}); }
+function formRender(){
+  var d=FORM.data;
+  var withPdv=num(d.vat_rate_percent)>0||d.vat_rate_percent===undefined;
+  var left='<div class="panel"><div class="sub">Nosilac posla i klijent</div>'+
+    '<div class="row">'+field('Firma (nosilac posla)',selE('f_company_id',companyOpts(),d.company_id||defaultCompanyId(),null,'formRecalc()'))+
+      '<div class="field"><label>Klijent</label><div class="minirow"><div style="flex:1">'+selectHtml('f_client_id',clientOpts(),d.client_id,'— izaberi —')+'</div><button class="qadd" onclick="quickAddClient()">+ Nov</button></div></div></div>'+
+    '<div class="row">'+field('Status',selectHtml('f_status',TOUR_STATUS,d.status||'priprema'))+
+      '<div class="field"><label>Sačuvana relacija</label><div class="minirow"><select id="f_relpick" onchange="relPick()" style="flex:1"><option value="">— izaberi —</option>'+relOptions().map(function(o){return '<option value="'+o.value+'">'+escapeHtml(o.label)+'</option>';}).join('')+'</select><button class="qadd" onclick="quickSaveRelation()">+ Sačuvaj</button></div></div>'+
+    '</div></div>'+
+    '<div class="panel"><div class="sub">Relacija i datumi</div>'+
+    '<div class="row">'+field('Polazište',inp('f_origin',d.origin,'text','formRecalc()'))+field('Destinacija',inp('f_destination',d.destination,'text','formRecalc()'))+'</div>'+
+    '<div class="row">'+field('Adresa utovara',inp('f_loading_address',d.loading_address))+field('Adresa istovara',inp('f_unloading_address',d.unloading_address))+'</div>'+
+    '<div class="row-3">'+field('Datum utovara',inp('f_loading_date',d.loading_date,'date','formDays()'))+field('Datum istovara',inp('f_unloading_date',d.unloading_date,'date','formDays()'))+field('Broj dana (auto)',inp('f_days',d.days||1,'text','formRecalc()'))+'</div>'+
+    '<div class="row">'+field('Opis robe',inp('f_cargo_description',d.cargo_description))+field('Težina (kg)',inp('f_cargo_weight_kg',d.cargo_weight_kg))+'</div></div>'+
+    '<div class="panel"><div class="sub">Vozilo i vozač</div>'+
+    '<div class="minirow"><div class="field" style="flex:1"><label>Kamion</label>'+selE('f_truck_id',truckOpts(),d.truck_id,'— izaberi —','formVehicleChange()')+'</div><button class="qadd" onclick="quickAddTruck()">+ Nov kamion</button></div>'+
+    '<div class="minirow"><div class="field" style="flex:1"><label>Vozač</label>'+selE('f_driver_id',driverOpts(),d.driver_id,'— izaberi —','formVehicleChange()')+'</div><button class="qadd" onclick="quickAddDriver()">+ Nov vozač</button></div>'+
+    '<p class="muted" style="margin:0">Promena kamiona/vozača preračunava automatske troškove.</p></div>'+
+    '<div class="panel"><div class="sub">Kilometri i prihodi</div>'+
+    '<div class="row">'+field('Kilometri na relaciji (loaded)',inp('f_loaded_km',d.loaded_km,'text','formRecalc()'))+field('Prazni kilometri (empty)',inp('f_empty_km',d.empty_km,'text','formRecalc()'))+'</div>'+
+    '<div class="row-3">'+field('Vozarina (€)',inp('f_freight_revenue_eur',d.freight_revenue_eur,'text','formRecalc()'))+field('Dodatak gorivo (€)',inp('f_fuel_surcharge_eur',d.fuel_surcharge_eur,'text','formRecalc()'))+field('Ostali prihodi (€)',inp('f_other_revenue_eur',d.other_revenue_eur,'text','formRecalc()'))+'</div>'+
+    '<div class="row-3"><div class="field"><label>PDV</label><label class="flex" style="gap:6px;align-items:center;height:38px"><input type="checkbox" id="f_with_pdv" style="width:auto" '+(withPdv?'checked':'')+' onchange="formTogglePdv()"> Sa PDV-om</label></div>'+
+      field('PDV stopa %',inp('f_vat_rate_percent',withPdv?(d.vat_rate_percent!==undefined?d.vat_rate_percent:DB.settings.default_vat_rate):0,'text','formRecalc()'))+field('Ciljna marža %',inp('f_target_profit_margin_percent',d.target_profit_margin_percent,'text','formRecalc()'))+'</div>'+
+    '<div class="row">'+field('Rok plaćanja (dana)',inp('f_payment_terms_days',d.payment_terms_days))+field('Napomena za fakturu',inp('f_invoice_note',d.invoice_note))+'</div></div>';
+  var right='<div class="panel"><div class="sub">Analiza (uživo)</div><div class="analysis" id="formAnalysis"></div>'+
+    '<div id="formWarn"></div></div>'+
+    '<div class="panel"><div class="flex between"><div class="sub" style="border:0;margin:0">Troškovi</div><button class="qadd" onclick="formAddManualCost()">+ Ručni trošak</button></div><div id="formCostBox"></div></div>'+
+    '<div class="panel"><div class="sub">Čuvanje</div><div class="flex wrap">'+
+      '<button class="btn" onclick="saveForm(\'priprema\')">Sačuvaj (priprema)</button>'+
+      '<button class="btn" onclick="saveForm(\'ponuda_poslata\')">Sačuvaj kao ponuda</button>'+
+      (FORM.editing?'<button class="btn sec" onclick="saveForm()">Sačuvaj izmene</button>':'')+
+      '<button class="btn sec" onclick="navigate(\'tours\')">Otkaži</button>'+
+    '</div></div>';
+  document.getElementById('content').innerHTML='<div class="form2"><div>'+left+'</div><div class="side">'+right+'</div></div>';
+  formEnsureCosts(); formRecalc();
+}
+function formDays(){ var ld=val('f_loading_date'),ud=val('f_unloading_date');
+  if(ld){var s=document.getElementById('f_start_date');} 
+  if(ld&&ud){ var diff=Math.round((new Date(ud)-new Date(ld))/86400000)+1; if(diff<1)diff=1; var df=document.getElementById('f_days'); if(df)df.value=diff; }
+  formRecalc(); }
+function formTogglePdv(){ var on=document.getElementById('f_with_pdv').checked; var f=document.getElementById('f_vat_rate_percent'); if(f){ f.value=on?(DB.settings.default_vat_rate||20):0; } formRecalc(); }
+function formComputeNow(){ formCollect(); FORM.data.start_date=FORM.data.loading_date; FORM.data.end_date=FORM.data.unloading_date;
+  formEnsureCosts(); var tr=byId('trucks','truck_id',FORM.data.truck_id),dr=byId('drivers','driver_id',FORM.data.driver_id);
+  var calc=calculateTourProfitability(FORM.data,FORM.costLines,tr,dr); FORM.costLines=calc.cost_lines; return calc; }
+function formRecalc(){ var c=formComputeNow();
+  var a=document.getElementById('formAnalysis'); if(a){ a.innerHTML=
+    aCell('Prihod',eur(c.total_revenue_eur))+aCell('Trošak',eur(c.total_cost_eur))+aCell('Profit',eur(c.gross_profit_eur))+aCell('Marža',pct(c.profit_margin_percent))+
+    aCell('Total km',fmtN(c.total_km,0))+aCell('Prazan %',pct(c.empty_km_percent))+aCell('Prihod/km',eurKm(c.revenue_per_total_km_eur))+aCell('Preporučena cena',eur(c.suggested_price_eur)); }
+  var w=document.getElementById('formWarn'); if(w){ var msg=''; if(c.profitability_status.key==='neisplativa')msg+='<div class="warnbox">⚠ Tura je neisplativa (negativan profit).</div>'; else if(c.price_below_cost_warning)msg+='<div class="warnbox">⚠ Preporučena cena je ispod troška.</div>'; w.innerHTML=msg; }
+  renderFormCosts(); }
+function renderFormCosts(){ var box=document.getElementById('formCostBox'); if(!box)return;
+  var rows=(FORM.costLines||[]).map(function(l,i){return '<tr><td>'+escapeHtml(l.name)+'</td><td>'+escapeHtml(l.category)+'</td>'+
+    '<td class="num"><input style="width:80px;text-align:right" value="'+(l.rate_eur||0)+'" oninput="formLineRate('+i+',this.value)"></td>'+
+    '<td class="num"><input style="width:92px;text-align:right" value="'+r2(l.amount_eur)+'" oninput="formLineAmount('+i+',this.value)"></td>'+
+    '<td>'+(l.manually_overridden?badge('ručno','warn'):'')+' <button class="btn ghost sm" title="Ukloni" onclick="formDelCost('+i+')">✕</button></td></tr>';}).join('');
+  var tot=(FORM.costLines||[]).reduce(function(s,l){return s+num(l.amount_eur);},0);
+  box.innerHTML='<div class="table-wrap"><table class="data tight"><thead><tr><th>Stavka</th><th>Kat.</th><th class="num">Stopa</th><th class="num">Iznos €</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="right" style="margin:8px 0 0"><b>Ukupan trošak: '+eur(tot)+'</b></p>'; }
+function formLineRate(i,v){ FORM.costLines[i].rate_eur=num(v); FORM.costLines[i].manually_overridden=false; delete FORM.costLines[i].amount_eur; formRecalc(); }
+function formLineAmount(i,v){ FORM.costLines[i].amount_eur=num(v); FORM.costLines[i].manually_overridden=true; var tot=FORM.costLines.reduce(function(s,l){return s+num(l.amount_eur);},0); }
+function formDelCost(i){ FORM.costLines.splice(i,1); formRecalc(); }
+function formAddManualCost(){ formEnsureCosts(); FORM.costLines.push({cost_item_id:'',name:'Ručni trošak',category:'ostalo',type:'manual_amount',unit:'EUR',rate_eur:0,amount_eur:0,calculation_base:'manual',manually_overridden:true,auto_calculated:false}); renderFormCosts(); }
+function saveForm(status){ formCollect(); FORM.data.start_date=FORM.data.loading_date; FORM.data.end_date=FORM.data.unloading_date;
+  if(status)FORM.data.status=status; FORM.data.cost_lines=FORM.costLines;
+  if(FORM.data.status!=='priprema'&&!FORM.data.client_id){ toast('Izaberite klijenta (za ponudu/realizaciju).','err'); return; }
+  var res=saveTourCore(FORM.data); toast('Tura sačuvana: '+byId('tours','tour_id',res.tour_id).tour_number,'ok'); navigate('tours'); }
+function editTour(id){ closeModal(); var t=JSON.parse(JSON.stringify(byId('tours','tour_id',id)));
+  t.cost_lines=table('tourCosts').filter(function(c){return c.tour_id===id;}).map(function(c){return {cost_item_id:c.cost_item_id,name:c.cost_name_snapshot,category:c.category_snapshot,type:c.type_snapshot,unit:c.unit_snapshot,rate_eur:num(c.rate_eur),amount_eur:num(c.amount_eur),quantity:num(c.quantity),calculation_base:c.calculation_base_snapshot,manually_overridden:!!c.manually_overridden};});
+  navigate('newtour'); viewNewTour(t); }
+
+/* ---- sačuvane relacije ---- */
+function relPick(){ var i=val('f_relpick'); if(i==='')return; var r=table('relations')[num(i)]; if(!r)return;
+  formCollect(); FORM.data.origin=r.from||''; FORM.data.destination=r.to||''; FORM.data.loading_address=r.laddr||''; FORM.data.unloading_address=r.uaddr||''; formRender(); }
+function quickSaveRelation(){ formCollect(); var f=FORM.data; if(!f.origin&&!f.destination){toast('Unesi polazište/destinaciju.','err');return;}
+  table('relations').push({from:f.origin||'',to:f.destination||'',laddr:f.loading_address||'',uaddr:f.unloading_address||''}); saveDB(); toast('Relacija sačuvana.','ok'); formRender(); }
+
+/* ---- brzo dodavanje entiteta iz forme ---- */
+function quickAddClient(){ formCollect(); openModal('Novi klijent','<div class="row">'+field('Naziv*',inp('qc_name'))+field('Država',inp('qc_country'))+'</div>'+
+  '<div class="row">'+field('PIB/VAT',inp('qc_pib'))+field('Valuta (EUR/DIN; prazno=auto)',inp('qc_cur'))+'</div>'+
+  '<div class="row">'+field('Grad',inp('qc_city'))+field('Email za fakture',inp('qc_bemail'))+'</div>'+
+  '<div class="row">'+field('Rok plaćanja',inp('qc_terms',DB.settings.default_payment_terms_days))+field('Adresa',inp('qc_addr'))+'</div>',
+  '<button class="btn" onclick="saveQuickClient()">Sačuvaj</button>'); }
+function saveQuickClient(){ if(!val('qc_name')){toast('Naziv je obavezan.','err');return;}
+  var n=table('clients').filter(function(c){return (c.client_id||'').indexOf('CLIENT-')===0;}).length+1;
+  var c={client_id:'CLIENT-'+('000'+n).slice(-4),client_name:val('qc_name'),legal_name:val('qc_name'),pib_vat:val('qc_pib'),registration_number:'',address:val('qc_addr'),city:val('qc_city'),country:val('qc_country'),currency:val('qc_cur'),contact_person:'',email:'',phone:'',billing_email:val('qc_bemail'),payment_terms_days:num(val('qc_terms')),note:'',active:true};
+  table('clients').push(c); saveDB(); toast('Klijent dodat.','ok'); closeModal(); FORM.data.client_id=c.client_id; formRender(); }
+function quickAddTruck(){ formCollect(); openModal('Novi kamion','<div class="row">'+field('Tablica*',inp('qt_plate'))+field('Marka',inp('qt_brand'))+'</div>'+
+  '<div class="row">'+field('Model',inp('qt_model'))+field('Potrošnja pun l/100km',inp('qt_cl',32))+'</div>'+
+  '<div class="row">'+field('Potrošnja prazan l/100km',inp('qt_ce',26))+field('Amortizacija €/km',inp('qt_dep',0.15))+'</div>'+
+  '<div class="row">'+field('Održavanje €/km',inp('qt_mnt',0.08))+field('Gume €/km',inp('qt_tire',0.03))+'</div>'+
+  '<div class="row">'+field('Osiguranje €/dan',inp('qt_ins',12))+field('Lizing €/dan',inp('qt_lease',0))+'</div>',
+  '<button class="btn" onclick="saveQuickTruck()">Sačuvaj</button>'); }
+function saveQuickTruck(){ if(!val('qt_plate')){toast('Tablica je obavezna.','err');return;}
+  var n=table('trucks').filter(function(t){return (t.truck_id||'').indexOf('TRUCK-')===0;}).length+1;
+  var t={truck_id:'TRUCK-'+('000'+n).slice(-4),plate_number:val('qt_plate'),trailer_plate_number:'',brand:val('qt_brand'),model:val('qt_model'),year:'',euro_standard:'',truck_type:'autotransporter',capacity_kg:0,fuel_type:'dizel',
+    avg_consumption_loaded_l_100km:num(val('qt_cl')),avg_consumption_empty_l_100km:num(val('qt_ce')),depreciation_per_km_eur:num(val('qt_dep')),maintenance_per_km_eur:num(val('qt_mnt')),tires_per_km_eur:num(val('qt_tire')),insurance_per_day_eur:num(val('qt_ins')),registration_per_day_eur:0,leasing_per_day_eur:num(val('qt_lease')),other_fixed_per_day_eur:0,note:'',active:true};
+  table('trucks').push(t); saveDB(); toast('Kamion dodat.','ok'); closeModal(); FORM.data.truck_id=t.truck_id; FORM.costLines=null; formRender(); }
+function quickAddDriver(){ formCollect(); openModal('Novi vozač','<div class="row">'+field('Ime i prezime*',inp('qd_name'))+field('Telefon',inp('qd_phone'))+'</div>'+
+  '<div class="row">'+field('Dnevnica €',inp('qd_allow',35))+field('Plata €/km',inp('qd_skm',0.18))+'</div>',
+  '<button class="btn" onclick="saveQuickDriver()">Sačuvaj</button>'); }
+function saveQuickDriver(){ if(!val('qd_name')){toast('Ime je obavezno.','err');return;}
+  var n=table('drivers').filter(function(d){return (d.driver_id||'').indexOf('DRIVER-')===0;}).length+1;
+  var d={driver_id:'DRIVER-'+('000'+n).slice(-4),full_name:val('qd_name'),phone:val('qd_phone'),email:'',license_number:'',passport_number:'',default_daily_allowance_eur:num(val('qd_allow')),default_salary_per_km_eur:num(val('qd_skm')),default_salary_per_day_eur:0,default_bonus_per_km_eur:0,note:'',active:true};
+  table('drivers').push(d); saveDB(); toast('Vozač dodat.','ok'); closeModal(); FORM.data.driver_id=d.driver_id; FORM.costLines=null; formRender(); }
+
+/* ---------- DOKUMENTI (pregled ponuda i naloga) ---------- */
+var DOC_TAB='ponude';
+function viewDocs(){ document.getElementById('content').innerHTML='<div class="panel"><div class="flex wrap" id="docTabs">'+
+    '<button class="btn" data-t="ponude" onclick="docTab(\'ponude\')">Ponude</button>'+
+    '<button class="btn sec" data-t="nalozi" onclick="docTab(\'nalozi\')">Nalozi za klijenta</button>'+
+    '<button class="btn sec" data-t="interni" onclick="docTab(\'interni\')">Interni nalozi</button>'+
+    '</div></div><div id="docBody"></div>'; docTab(DOC_TAB); }
+function docTab(t){ DOC_TAB=t; document.querySelectorAll('#docTabs button').forEach(function(b){b.className='btn '+(b.dataset.t===t?'':'sec');});
+  var typeMap={ponude:'ponuda_klijentu',nalozi:'nalog_za_klijenta',interni:'interni_nalog'};
+  var type=typeMap[t]; var docs=table('documents').filter(function(d){return d.document_type===type;}).sort(function(a,b){return (b.generated_at||'').localeCompare(a.generated_at||'');});
+  var openFn={ponude:'pdfOffer',nalozi:'pdfClientOrder',interni:'pdfInternal'}[t];
+  var rows=docs.map(function(dc){ var tu=byId('tours','tour_id',dc.tour_id); var cur=tu?clientCurrency(byId('clients','client_id',tu.client_id)):'EUR';
+    return '<tr><td><b>'+escapeHtml(dc.document_number||'')+'</b></td><td>'+dateSr(dc.generated_at)+'</td>'+
+      '<td>'+escapeHtml(tu?tu.tour_number:'—')+'</td><td>'+escapeHtml(tu?tu.client_name_snapshot:'—')+'</td>'+
+      '<td>'+escapeHtml(tu?(tu.origin+' → '+tu.destination):'')+'</td>'+
+      '<td class="num">'+(tu?moneyDoc(tu.total_with_vat_eur,cur):'')+'</td>'+
+      '<td><div class="actions">'+(tu?'<button class="btn sm" onclick="'+openFn+'(\''+dc.tour_id+'\')">Otvori PDF</button><button class="btn sm sec" onclick="openTour(\''+dc.tour_id+'\')">Tura</button>':'')+'</div></td></tr>';
+  }).join('');
+  var titles={ponude:'Izdate ponude',nalozi:'Izdati nalozi za klijenta',interni:'Interni nalozi'};
+  document.getElementById('docBody').innerHTML='<div class="panel"><h2>'+titles[t]+' ('+docs.length+')</h2><div class="table-wrap"><table class="data tight"><thead><tr><th>Broj</th><th>Datum</th><th>Tura</th><th>Klijent</th><th>Relacija</th><th class="num">Ukupno</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="7" class="muted" style="padding:16px">Još nema dokumenata. Generišu se iz ture: Ture → Ponuda/Nalog.</td></tr>')+'</tbody></table></div></div>'; }
+
+/* ---------- IZVEŠTAJI ---------- */
+var REPORT_DEFS=[['by_tour','Profitabilnost po turi'],['by_company','Po firmi (AVTO/TRANSPORT/ZBIRNO)'],['by_client','Po klijentu'],['by_truck','Po kamionu'],['by_driver','Po vozaču'],['by_route','Po relaciji'],['by_month','Po mesecu'],['cost_by_category','Troškovi po kategoriji'],['fixed_vs_variable','Fiksni vs varijabilni'],['empty_km','Prazni kilometri'],['per_km','Po kilometru'],['top10','Top 10 tura'],['bottom10','Bottom 10 tura'],['cancelled','Otkazane ture'],['invoicing','Fakturisano / nefakturisano'],['collection','Naplaćeno / nenaplaćeno'],['conversion','Konverzija ponuda → ture']];
+function viewReports(){ document.getElementById('content').innerHTML='<div class="panel"><div class="filters">'+
+  '<div class="field"><label>Firma</label>'+selE('rCompany',companyOpts(),'','ZBIRNO (sve)')+'</div>'+
+  dateField('rFrom','Od')+dateField('rTo','Do')+selField('rType','Izveštaj',REPORT_DEFS.map(function(r){return {value:r[0],label:r[1]};}),null)+
+  selField('rClient','Klijent',clientOpts(),'Svi')+selField('rTruck','Kamion',truckOpts(),'Svi')+textField('rMargin','Min. marža %','')+
+  '</div><div class="flex wrap" style="margin-top:12px"><label class="flex"><input type="checkbox" id="rReal" style="width:auto"> Samo realizovane</label>'+
+  '<button class="btn" onclick="loadReport()">Prikaži</button><button class="btn sec" onclick="reportCsv()">Izvoz CSV</button><button class="btn sec" onclick="reportPdf()">Izvoz PDF</button></div></div><div id="repBody"></div>';
+  setVal('rType','by_tour'); loadReport(); }
+function reportFilters(){ return {company_id:val('rCompany'),dateFrom:val('rFrom'),dateTo:val('rTo'),client_id:val('rClient'),truck_id:val('rTruck'),minMargin:val('rMargin'),onlyRealized:chk('rReal')}; }
+function reportRender(title,tableHtml,chartDefs){
+  var grid=''; if(chartDefs&&chartDefs.length){ var cols=chartDefs.length>1?'1fr 1fr':'1fr';
+    grid='<div class="grid rgrid" style="grid-template-columns:'+cols+'">'+chartDefs.map(function(c){
+      return '<div class="panel"><h2>'+c.t+'</h2><div class="chart-box" style="height:'+(c.h||260)+'px"><canvas id="'+c.id+'"></canvas></div></div>';}).join('')+'</div>'; }
+  document.getElementById('repBody').innerHTML='<div class="panel"><h2>'+title+'</h2>'+tableHtml+'</div>'+grid;
+  destroyCharts(); (chartDefs||[]).forEach(function(c){ mkChart(c.id,c.cfg); });
+}
+function loadReport(){ var type=val('rType')||'by_tour'; var d=getReport(type,reportFilters());
+  var def=REPORT_DEFS.filter(function(r){return r[0]===type;})[0]||REPORT_DEFS[0];
+  var title=def[1]+' — '+(val('rCompany')?companyName(val('rCompany')):'ZBIRNO (sve firme)');
+  var box=document.getElementById('repBody'); var V=function(a,k){return a.map(function(x){return x[k];});};
+
+  if(type==='fixed_vs_variable'){
+    reportRender(title,'<div class="analysis">'+aCell('Fiksni troškovi',eur(d.fixed)+' ('+pct(d.fixedPercent)+')')+aCell('Varijabilni troškovi',eur(d.variable)+' ('+pct(d.variablePercent)+')')+'</div>',
+      [{t:'Fiksni vs varijabilni',id:'rc1',h:300,cfg:{type:'doughnut',data:{labels:['Fiksni','Varijabilni'],datasets:[{data:[d.fixed,d.variable],backgroundColor:[CC.brand,CC.cost],borderWidth:0}]},options:pieOpts()}}]); return; }
+
+  if(type==='conversion'){
+    reportRender(title,'<div class="analysis">'+aCell('Ponuđeno',d.offered)+aCell('Realizovano',d.realized)+aCell('Konverzija',pct(d.conversionPercent))+'</div>',
+      [{t:'Realizacija ponuda',id:'rc1',h:300,cfg:{type:'doughnut',data:{labels:['Realizovano','Nerealizovano'],datasets:[{data:[d.realized,Math.max(0,d.offered-d.realized)],backgroundColor:[CC.profit,CC.gray],borderWidth:0}]},options:pieOpts()}}]); return; }
+
+  if(type==='invoicing'||type==='collection'){
+    var a=type==='invoicing'?d.invoiced:d.collected, b=type==='invoicing'?d.uninvoiced:d.uncollected;
+    var la=type==='invoicing'?'Fakturisano':'Naplaćeno', lb=type==='invoicing'?'Za fakturisanje':'Za naplatu';
+    var sum=function(arr){return arr.reduce(function(s,x){return s+num(x.prihod);},0);};
+    box.innerHTML='<div class="panel"><h2>'+title+'</h2><div class="analysis">'+aCell(la+' (tura)',a.length)+aCell(lb+' (tura)',b.length)+aCell(la+' (€)',eur(sum(a)))+aCell(lb+' (€)',eur(sum(b)))+'</div></div>'+
+      '<div class="grid rgrid" style="grid-template-columns:1fr 1fr">'+
+      '<div class="panel"><h2>Po broju tura</h2><div class="chart-box"><canvas id="rc1"></canvas></div></div>'+
+      '<div class="panel"><h2>Po prihodu (€)</h2><div class="chart-box"><canvas id="rc2"></canvas></div></div></div>'+
+      '<div class="panel"><h2>'+la+' ('+a.length+')</h2>'+tableFromArr(a)+'</div><div class="panel"><h2>'+lb+' ('+b.length+')</h2>'+tableFromArr(b)+'</div>';
+    destroyCharts();
+    mkChart('rc1',{type:'doughnut',data:{labels:[la,lb],datasets:[{data:[a.length,b.length],backgroundColor:[CC.profit,CC.cost],borderWidth:0}]},options:pieOpts()});
+    mkChart('rc2',{type:'doughnut',data:{labels:[la,lb],datasets:[{data:[r2(sum(a)),r2(sum(b))],backgroundColor:[CC.rev,CC.gray],borderWidth:0}]},options:pieOpts()}); return; }
+
+  var tableHtml=tableFromArr(Array.isArray(d)?d:[]);
+  var cd=[];
+  if(type==='by_tour'&&d.length){ var L=V(d,'broj');
+    cd=[{t:'Prihod / trošak / profit po turi',id:'rc1',cfg:{type:'bar',data:{labels:L,datasets:dsRCP(V(d,'prihod'),V(d,'trosak'),V(d,'profit'))},options:chartOpts()}},
+        {t:'Marža (%) po turi',id:'rc2',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Marža %',data:V(d,'marza'),backgroundColor:V(d,'marza').map(function(m){return num(m)>=0?CC.profit:CC.danger;})}]},options:chartOpts()}},
+        {t:'€ po kilometru',id:'rc3',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Prihod/km',data:V(d,'prihod_km'),backgroundColor:CC.rev},{label:'Trošak/km',data:V(d,'trosak_km'),backgroundColor:CC.cost},{label:'Profit/km',data:V(d,'profit_km'),backgroundColor:CC.profit}]},options:chartOpts()}},
+        {t:'Kilometraža (ukupno / prazni)',id:'rc4',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Ukupno km',data:V(d,'total_km'),backgroundColor:CC.brand},{label:'Prazni km',data:V(d,'prazni_km'),backgroundColor:CC.purple}]},options:chartOpts()}}]; }
+  else if(type==='by_company'&&d.length){ var dc=d.filter(function(x){return x.firma!=='ZBIRNO';}); var L=V(dc,'firma');
+    cd=[{t:'Prihod / trošak / profit po firmi',id:'rc1',cfg:{type:'bar',data:{labels:L,datasets:dsRCP(V(dc,'prihod'),V(dc,'trosak'),V(dc,'profit'))},options:chartOpts()}},
+        {t:'Učešće u profitu',id:'rc2',cfg:{type:'doughnut',data:{labels:L,datasets:[{data:V(dc,'profit'),backgroundColor:palette(L.length),borderWidth:0}]},options:pieOpts()}},
+        {t:'Marža (%) po firmi',id:'rc3',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Marža %',data:V(dc,'marza'),backgroundColor:CC.teal}]},options:chartOpts()}},
+        {t:'Broj tura po firmi',id:'rc4',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Ture',data:V(dc,'ture'),backgroundColor:CC.brand}]},options:chartOpts()}}]; }
+  else if(['by_client','by_truck','by_driver','by_route'].indexOf(type)>-1&&d.length){ var dd=d.slice(0,10); var L=V(dd,'label');
+    cd=[{t:'Prihod / trošak / profit',id:'rc1',cfg:{type:'bar',data:{labels:L,datasets:dsRCP(V(dd,'revenue'),V(dd,'cost'),V(dd,'profit'))},options:chartOpts()}},
+        {t:'Učešće u profitu',id:'rc2',cfg:{type:'doughnut',data:{labels:L,datasets:[{data:V(dd,'profit'),backgroundColor:palette(L.length),borderWidth:0}]},options:pieOpts()}},
+        {t:'Marža (%)',id:'rc3',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Marža %',data:V(dd,'margin'),backgroundColor:V(dd,'margin').map(function(m){return num(m)>=0?CC.profit:CC.danger;})}]},options:chartOpts()}},
+        {t:'€ po kilometru',id:'rc4',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Prihod/km',data:V(dd,'revenuePerKm'),backgroundColor:CC.rev},{label:'Trošak/km',data:V(dd,'costPerKm'),backgroundColor:CC.cost},{label:'Profit/km',data:V(dd,'profitPerKm'),backgroundColor:CC.profit}]},options:chartOpts()}}]; }
+  else if(type==='by_month'&&d.length){ var L=V(d,'month');
+    cd=[{t:'Prihod / trošak / profit po mesecu',id:'rc1',cfg:{type:'line',data:{labels:L,datasets:[
+        {label:'Prihod',data:V(d,'revenue'),borderColor:CC.rev,backgroundColor:'rgba(47,111,176,.12)',fill:true,tension:.3,pointRadius:3},
+        {label:'Trošak',data:V(d,'cost'),borderColor:CC.cost,tension:.3,pointRadius:3},
+        {label:'Profit',data:V(d,'profit'),borderColor:CC.profit,backgroundColor:'rgba(14,159,110,.12)',fill:true,tension:.3,pointRadius:3}]},options:chartOpts()}},
+        {t:'Broj tura po mesecu',id:'rc2',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Ture',data:V(d,'count'),backgroundColor:CC.brand}]},options:chartOpts()}},
+        {t:'Marža (%) po mesecu',id:'rc3',cfg:{type:'line',data:{labels:L,datasets:[{label:'Marža %',data:V(d,'margin'),borderColor:CC.teal,tension:.3,pointRadius:3}]},options:chartOpts()}}]; }
+  else if(type==='cost_by_category'&&d.length){ var L=V(d,'category');
+    cd=[{t:'Struktura troškova',id:'rc1',cfg:{type:'doughnut',data:{labels:L,datasets:[{data:V(d,'amount'),backgroundColor:palette(L.length),borderWidth:0}]},options:pieOpts()}},
+        {t:'Iznos po kategoriji (€)',id:'rc2',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Iznos €',data:V(d,'amount'),backgroundColor:CC.brand}]},options:chartOpts({indexAxis:'y'})}}]; }
+  else if(type==='per_km'&&d.length){ var L=V(d,'broj');
+    cd=[{t:'€ po kilometru po turi',id:'rc1',h:300,cfg:{type:'bar',data:{labels:L,datasets:[{label:'Prihod/km',data:V(d,'prihod_km'),backgroundColor:CC.rev},{label:'Trošak/km',data:V(d,'trosak_km'),backgroundColor:CC.cost},{label:'Profit/km',data:V(d,'profit_km'),backgroundColor:CC.profit}]},options:chartOpts()}}]; }
+  else if(type==='empty_km'&&d.length){ var L=V(d,'broj');
+    cd=[{t:'Prazan udeo (%) po turi',id:'rc1',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Prazan %',data:V(d,'prazan_procenat'),backgroundColor:CC.purple}]},options:chartOpts()}},
+        {t:'Puni vs prazni km',id:'rc2',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Puni km',data:V(d,'puni_km'),backgroundColor:CC.rev},{label:'Prazni km',data:V(d,'prazni_km'),backgroundColor:CC.cost}]},options:chartOpts()}}]; }
+  else if((type==='top10'||type==='bottom10')&&d.length){ var L=V(d,'tour_number');
+    cd=[{t:'Profit po turi',id:'rc1',cfg:{type:'bar',data:{labels:L,datasets:[{label:'Profit €',data:V(d,'profit'),backgroundColor:V(d,'profit').map(function(p){return num(p)>=0?CC.profit:CC.danger;})}]},options:chartOpts({indexAxis:'y'})}},
+        {t:'Prihod / trošak / profit',id:'rc2',cfg:{type:'bar',data:{labels:L,datasets:dsRCP(V(d,'revenue'),V(d,'cost'),V(d,'profit'))},options:chartOpts()}}]; }
+  else if(type==='cancelled'&&d.length){ var L=V(d,'broj');
+    cd=[{t:'Izgubljeni prihod (otkazane)',id:'rc1',h:300,cfg:{type:'bar',data:{labels:L,datasets:[{label:'Prihod €',data:V(d,'prihod'),backgroundColor:CC.danger}]},options:chartOpts()}}]; }
+  reportRender(title,tableHtml,cd);
+}
+function tableFromArr(arr){ if(!arr||!arr.length)return '<p class="muted">Nema podataka za zadate filtere.</p>';
+  var headers=Object.keys(arr[0]); var body=arr.map(function(row){return '<tr>'+headers.map(function(h){var v=row[h];return '<td class="'+(typeof v==='number'?'num':'')+'">'+(typeof v==='number'?fmtN(v,2):escapeHtml(v))+'</td>';}).join('')+'</tr>';}).join('');
+  return '<div class="table-wrap"><table class="data"><thead><tr>'+headers.map(function(h){return '<th class="'+(/eur|profit|cost|revenue|km|marz|amount|percent|count|prihod|trosak/i.test(h)?'num':'')+'">'+escapeHtml(h)+'</th>';}).join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>'; }
+function reportCsv(){ var type=val('rType'); var d=getReport(type,reportFilters()); var arr=Array.isArray(d)?d:(d.invoiced||d.collected||[]);
+  if(!arr.length){toast('Nema podataka za CSV (ili je agregatni tip).','err');return;}
+  var headers=Object.keys(arr[0]); var lines=[headers.join(';')];
+  arr.forEach(function(row){lines.push(headers.map(function(h){var v=row[h];return typeof v==='number'?String(v).replace('.',','):'"'+String(v).replace(/"/g,'""')+'"';}).join(';'));});
+  var blob=new Blob(["\ufeff"+lines.join('\n')],{type:'text/csv;charset=utf-8'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='izvestaj_'+type+'.csv'; a.click(); toast('CSV preuzet.','ok'); }
+function reportPdf(){ var type=val('rType'); var title=REPORT_DEFS.filter(function(r){return r[0]===type;})[0][1]; var f=reportFilters();
+  var d=getReport(type,f); var dash=getDashboard(f); var arr=Array.isArray(d)?d:[];
+  var tableHtml=''; if(arr.length){ var headers=Object.keys(arr[0]); tableHtml='<table><tr>'+headers.map(function(h){return '<th>'+escapeHtml(h)+'</th>';}).join('')+'</tr>'+arr.map(function(row){return '<tr>'+headers.map(function(h){var v=row[h];return '<td class="'+(typeof v==='number'?'num':'')+'">'+(typeof v==='number'?fmtN(v,2):escapeHtml(v))+'</td>';}).join('')+'</tr>';}).join('')+'</table>'; }
+  else tableHtml='<p class="muted">Agregatni izveštaj — vidi ekran. KPI pregled je ispod.</p>';
+  var period=(f.dateFrom||f.dateTo)?((f.dateFrom?dateSr(f.dateFrom):'...')+' – '+(f.dateTo?dateSr(f.dateTo):'...')):'svi periodi';
+  var inner=companyHead()+'<div class="right"><h2 style="border:none">IZVEŠTAJ</h2>'+escapeHtml(title)+'<br>Period: '+period+(f.onlyRealized?' · samo realizovane':'')+'<br>Datum: '+dateSr(new Date())+'</div></div>'+
+    '<h2>Ključni pokazatelji</h2><table><tr><th>Broj tura</th><td class="num">'+dash.count+'</td><th>Ukupan prihod</th><td class="num">'+eur(dash.revenue)+'</td></tr>'+
+    '<tr><th>Ukupan trošak</th><td class="num">'+eur(dash.cost)+'</td><th>Bruto profit</th><td class="num">'+eur(dash.profit)+'</td></tr>'+
+    '<tr><th>Prosečna marža</th><td class="num">'+pct(dash.avgMargin)+'</td><th>Prihod/km</th><td class="num">'+eurKm(dash.avgRevenuePerKm)+'</td></tr>'+
+    '<tr><th>Trošak/km</th><td class="num">'+eurKm(dash.avgCostPerKm)+'</td><th>Profit/km</th><td class="num">'+eurKm(dash.avgProfitPerKm)+'</td></tr></table>'+
+    '<h2>Detalji</h2>'+tableHtml+'<div class="footer">'+escapeHtml(DB.settings.pdf_footer_text)+' · Generisano '+dateSr(new Date())+'</div>';
+  printDoc('Izvestaj_'+type,inner); toast('PDF izveštaj spreman — „Sačuvaj kao PDF".','ok'); }
+/* ---------- ADMINISTRACIJA ---------- */
+function viewAdmin(){ var tabs=[['company','Podešavanja'],['firme','Firme'],['clients','Klijenti'],['trucks','Kamioni'],['drivers','Vozači'],['costs','Troškovne stavke'],['users','Korisnici'],['sync','Sinhronizacija']];
+  document.getElementById('content').innerHTML='<div class="panel"><div class="flex wrap" id="adminTabs">'+tabs.map(function(t,i){return '<button class="btn '+(i===0?'':'sec')+'" data-t="'+t[0]+'" onclick="adminTab(\''+t[0]+'\')">'+t[1]+'</button>';}).join('')+'</div></div><div id="adminBody"></div>'; adminTab('company'); }
+function adminTab(t){ document.querySelectorAll('#adminTabs button').forEach(function(b){b.className='btn '+(b.dataset.t===t?'':'sec');});
+  ({company:adminCompany,firme:adminCompanies,clients:function(){adminList('clients');},trucks:function(){adminList('trucks');},drivers:function(){adminList('drivers');},costs:adminCosts,users:adminUsers,sync:adminSync}[t])(); }
+function adminSync(){ var cur=CONFIG.apiUrl||'';
+  var st=ONLINE?'<span class="tag success">● Povezano — Google Sheets</span>':'<span class="tag neutral">● Radi lokalno (localStorage)</span>';
+  document.getElementById('adminBody').innerHTML='<div class="panel" style="max-width:640px"><h2>Povezivanje sa Google Sheets bazom</h2>'+
+    '<p style="margin:2px 0 12px">'+st+'</p>'+
+    '<div class="field"><label>Web App URL (Apps Script, završava na /exec)</label><input id="sy_url" value="'+escapeHtml(cur)+'" placeholder="https://script.google.com/macros/s/.../exec"></div>'+
+    '<div class="flex wrap" style="margin-top:10px"><button class="btn" onclick="syncConnect()">Sačuvaj i poveži</button>'+
+    '<button class="btn sec" onclick="syncTest()">Testiraj vezu</button>'+
+    (ONLINE?'<button class="btn sec" onclick="syncPush()">Pošalji lokalne podatke u oblak</button><button class="btn sec" onclick="syncDisconnect()">Prekini vezu</button>':'')+'</div>'+
+    '<p class="muted" style="margin-top:12px">URL se pamti u ovom pregledaču. Cela baza se čuva u Google Sheet-u (list „DB"), uz zaključavanje za 2–3 korisnika. Bez URL-a aplikacija radi lokalno i otvara se na dvoklik.</p></div>'; }
+function syncTest(){ var u=(val('sy_url')||'').trim()||CONFIG.apiUrl; if(!u){toast('Unesi URL.','err');return;} toast('Testiram...','ok');
+  fetch(u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'get'})})
+    .then(function(r){return r.json();}).then(function(j){ toast(j&&j.ok?'Veza ispravna ✓':'Server javlja grešku: '+((j&&j.error)||'?'),(j&&j.ok)?'ok':'err'); })
+    .catch(function(){ toast('Veza neuspela — proveri URL i da je Deploy „Anyone".','err'); }); }
+function syncConnect(){ var u=(val('sy_url')||'').trim(); if(!u){toast('Unesi URL.','err');return;}
+  if(!/^https:\/\/script\.google\.com\/.*\/exec$/.test(u)){ if(!confirm('URL ne izgleda kao Apps Script „/exec" adresa. Nastaviti?')) return; }
+  CONFIG.apiUrl=u; saveApiUrl(u); toast('Povezujem...','ok');
+  apiCall('get').then(function(data){
+    if(data&&data.settings){ if(confirm('Oblak već ima podatke. Učitati ih (prepiši lokalne)? \nOK = učitaj iz oblaka · Cancel = pošalji lokalne u oblak')){ DB=data; saveLocal(); }
+      else { return pushCloudNow(); } }
+    else { return pushCloudNow(); }
+  }).then(function(){ ensureAuthUsers(); setOnline(true); toast('Povezano sa Google Sheets ✓','ok'); adminTab('sync'); })
+    .catch(function(e){ setOnline(false); toast('Greška: '+(e.message||'veza nije uspela'),'err'); adminTab('sync'); }); }
+function syncPush(){ toast('Šaljem...','ok'); pushCloudNow().then(function(){toast('Poslato u oblak ✓','ok');}).catch(function(e){toast('Greška: '+(e.message||'?'),'err');}); }
+function syncDisconnect(){ if(!confirm('Prekinuti vezu i raditi lokalno?')) return; CONFIG.apiUrl=''; saveApiUrl(''); setOnline(false); toast('Veza prekinuta — radim lokalno.','ok'); adminTab('sync'); }
+function adminUsers(){ var rows=table('users').map(function(u){return '<tr><td>'+escapeHtml(u.username||'')+'</td><td>'+escapeHtml(u.name||'')+'</td><td>'+escapeHtml(u.role||'')+'</td>'+
+    '<td>'+((u.active!==false)?badge('aktivan','success'):badge('neaktivan','neutral'))+'</td>'+
+    '<td><button class="btn sm sec" onclick="editUser(\''+u.user_id+'\')">Izmeni</button></td></tr>';}).join('');
+  document.getElementById('adminBody').innerHTML='<div class="panel"><div class="flex between"><h2>Korisnici</h2><button class="btn" onclick="editUser()">+ Novi</button></div>'+
+    '<div class="table-wrap"><table class="data"><thead><tr><th>Korisničko ime</th><th>Ime</th><th>Uloga</th><th>Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<p class="muted" style="margin-top:8px">Uloga „admin" vidi sve. Uloga „korisnik" nema Administraciju.</p></div>'; }
+function editUser(id){ var u=id?byId('users','user_id',id):{role:'korisnik',active:true};
+  var body='<div class="row">'+field('Korisničko ime*',inp('us_username',u.username))+field('Ime',inp('us_name',u.name))+'</div>'+
+    '<div class="row">'+field('Lozinka*',inp('us_password',u.password))+field('Uloga',selectHtml('us_role',[{value:'admin',label:'admin'},{value:'korisnik',label:'korisnik'}],u.role||'korisnik'))+'</div>'+
+    field('Aktivan',selectHtml('us_active',[{value:'true',label:'Da'},{value:'false',label:'Ne'}],String(u.active!==false)));
+  openModal((id?'Izmena':'Novi')+' korisnik',body,'<button class="btn" onclick="saveUser(\''+(id||'')+'\')">Sačuvaj</button>'); }
+function saveUser(id){ if(!val('us_username')||!val('us_password')){toast('Korisničko ime i lozinka su obavezni.','err');return;}
+  var o=id?byId('users','user_id',id):{user_id:uid('USR'),created_at:nowIso()};
+  o.username=val('us_username').trim(); o.name=val('us_name'); o.password=val('us_password'); o.role=val('us_role'); o.active=(val('us_active')==='true');
+  if(!id) table('users').push(o); saveDB(); toast('Sačuvano.','ok'); closeModal(); adminTab('users'); }
+function adminCompany(){ var s=DB.settings;
+  var g=[['default_vat_rate','PDV stopa (%)'],['default_profit_margin_percent','Ciljna marža (%)'],['default_payment_terms_days','Rok plaćanja (dana)'],['eur_din_rate','Kurs EUR/RSD'],['fuel_price_eur_per_l','Cena goriva €/l'],['pdf_footer_text','Tekst u podnožju PDF-a']];
+  document.getElementById('adminBody').innerHTML='<div class="panel" style="max-width:640px"><h2>Globalna podešavanja</h2>'+
+    '<div class="field"><label>Podrazumevana firma (nosilac posla)</label>'+selectHtml('set_default_company_id',companyOpts(),s.default_company_id)+'</div>'+
+    '<div class="row">'+g.map(function(k){return field(k[1],inp('set_'+k[0],s[k[0]]));}).join('')+'</div>'+
+    '<button class="btn" onclick="saveCompany()">Sačuvaj</button>'+
+    '<p class="muted" style="margin-top:10px">Podaci firmi (naziv, PIB, IBAN…) se uređuju u tabu <b>Firme</b>.</p></div>'; }
+function saveCompany(){ var s=DB.settings; s.default_company_id=val('set_default_company_id');
+  ['default_vat_rate','default_profit_margin_percent','default_payment_terms_days','eur_din_rate','fuel_price_eur_per_l'].forEach(function(k){ s[k]=num(val('set_'+k)); });
+  s.pdf_footer_text=val('set_pdf_footer_text'); saveDB(); toast('Sačuvano.','ok'); }
+function adminCompanies(){ var rows=(DB.companies||[]).map(function(c){return '<tr><td><b>'+escapeHtml(c.name)+'</b></td><td>'+escapeHtml(c.country||'')+'</td><td>'+escapeHtml(c.pib||'')+'</td><td>'+escapeHtml(c.vat_number||'')+'</td>'+
+    '<td>'+(c.company_id===defaultCompanyId()?badge('podrazumevana','ok'):'')+'</td>'+
+    '<td><button class="btn sm sec" onclick="editCompany(\''+c.company_id+'\')">Izmeni</button></td></tr>';}).join('');
+  document.getElementById('adminBody').innerHTML='<div class="panel"><div class="flex between"><h2>Firme (nosioci posla)</h2><button class="btn" onclick="editCompany()">+ Nova firma</button></div>'+
+    '<div class="table-wrap"><table class="data"><thead><tr><th>Naziv</th><th>Država</th><th>PIB</th><th>PDV</th><th></th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<p class="muted" style="margin-top:8px">Svaka tura, ponuda i nalog imaju firmu nosioca — njeni podaci idu u zaglavlje PDF-a.</p></div>'; }
+var CO_FIELDS=[['name','Naziv*'],['short','Kratko ime'],['address','Adresa'],['city','Grad'],['country','Država'],['pib','PIB'],['registration_number','Matični broj'],['vat_number','PDV broj'],['email','Email'],['phone','Telefon'],['bank_account','Račun'],['iban','IBAN'],['swift','SWIFT'],['footer_text','Tekst u podnožju']];
+function editCompany(id){ var c=id?companyById(id):{active:true};
+  var form=CO_FIELDS.map(function(d){return field(d[1],inp('co_'+d[0],c[d[0]]));}).join('');
+  openModal((id?'Izmena':'Nova')+' firma','<div class="row">'+form+'</div>','<button class="btn" onclick="saveCompany2(\''+(id||'')+'\')">Sačuvaj</button>'); }
+function saveCompany2(id){ if(!val('co_name')){toast('Naziv je obavezan.','err');return;}
+  var c=id?companyById(id):{company_id:'CO-'+Date.now().toString(36).toUpperCase().slice(-5),active:true};
+  CO_FIELDS.forEach(function(d){ c[d[0]]=val('co_'+d[0]); });
+  if(!id) table('companies').push(c); saveDB(); toast('Firma sačuvana.','ok'); closeModal(); adminTab('firme'); }
+function adminList(kind){ var data=table(kind); var cols={clients:['client_id','client_name','pib_vat','city','active'],trucks:['truck_id','plate_number','brand','model','active'],drivers:['driver_id','full_name','phone','active']}[kind];
+  var idF=cols[0]; var rows=data.map(function(r){return '<tr>'+cols.map(function(cl){var v=r[cl]; if(cl==='active')v=act(r)?badge('aktivan','success'):badge('neaktivan','neutral'); return '<td>'+v+'</td>';}).join('')+
+    '<td><div class="actions"><button class="btn sm sec" onclick="editEntity(\''+kind+'\',\''+r[idF]+'\')">Izmeni</button>'+
+    '<button class="btn sm sec" onclick="copyEntity(\''+kind+'\',\''+r[idF]+'\')">Kopiraj</button>'+
+    '<button class="btn sm danger" onclick="deleteEntity(\''+kind+'\',\''+r[idF]+'\')">Briši</button></div></td></tr>';}).join('');
+  var titles={clients:'Klijenti',trucks:'Kamioni',drivers:'Vozači'};
+  document.getElementById('adminBody').innerHTML='<div class="panel"><div class="flex between"><h2>'+titles[kind]+'</h2><button class="btn" onclick="editEntity(\''+kind+'\')">+ Novi</button></div><div class="table-wrap"><table class="data"><thead><tr>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'<th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'; }
+function entityRefCount(kind,id){ var f={clients:'client_id',trucks:'truck_id',drivers:'driver_id'}[kind];
+  return table('tours').filter(function(t){return t[f]===id;}).length; }
+function copyEntity(kind,id){ var idF={clients:'client_id',trucks:'truck_id',drivers:'driver_id'}[kind];
+  var src=byId(kind,idF,id); if(!src)return; var c=JSON.parse(JSON.stringify(src));
+  var prefix={clients:'CLIENT',trucks:'TRUCK',drivers:'DRIVER'}[kind]; var n=table(kind).filter(function(r){return (r[idF]||'').indexOf(prefix+'-')===0;}).length+1;
+  c[idF]=prefix+'-'+('000'+n).slice(-4); c.active=true;
+  var nameF={clients:'client_name',trucks:'plate_number',drivers:'full_name'}[kind];
+  c[nameF]=(src[nameF]||'')+' (kopija)';
+  table(kind).push(c); saveDB(); toast('Kopija napravljena.','ok'); adminTab(kind); }
+function deleteEntity(kind,id){ var idF={clients:'client_id',trucks:'truck_id',drivers:'driver_id'}[kind];
+  var rec=byId(kind,idF,id); if(!rec)return; var refs=entityRefCount(kind,id);
+  if(refs>0){ if(confirm('Ovaj zapis se koristi u '+refs+' tura, pa se ne može trajno obrisati (istorija bi ostala bez podataka).\n\nDa li da ga DEAKTIVIRAM umesto toga?')){ rec.active=false; saveDB(); toast('Deaktivirano.','ok'); adminTab(kind); } return; }
+  if(!confirm('Trajno obrisati ovaj zapis?')) return;
+  DB[kind]=table(kind).filter(function(r){return r[idF]!==id;}); saveDB(); toast('Obrisano.','ok'); adminTab(kind); }
+function editEntity(kind,id){ var idF={clients:'client_id',trucks:'truck_id',drivers:'driver_id'}[kind]; var rec=id?byId(kind,idF,id):{};
+  var defs={clients:[['client_name','Naziv*'],['legal_name','Pravni naziv'],['pib_vat','PIB/VAT'],['registration_number','Matični'],['address','Adresa'],['city','Grad'],['country','Država'],['currency','Valuta (EUR/DIN; prazno=auto)'],['company_id','Podrazumevana firma'],['contact_person','Kontakt osoba'],['email','Email'],['phone','Telefon'],['billing_email','Email za fakture'],['payment_terms_days','Rok plaćanja'],['note','Napomena']],
+    trucks:[['plate_number','Tablica*'],['trailer_plate_number','Tablica prikolice'],['company_id','Firma'],['brand','Marka'],['model','Model'],['year','Godina'],['euro_standard','Euro standard'],['truck_type','Tip'],['capacity_kg','Nosivost kg'],['fuel_type','Gorivo'],['avg_consumption_loaded_l_100km','Potrošnja pun l/100km'],['avg_consumption_empty_l_100km','Potrošnja prazan l/100km'],['depreciation_per_km_eur','Amortizacija €/km'],['maintenance_per_km_eur','Održavanje €/km'],['tires_per_km_eur','Gume €/km'],['insurance_per_day_eur','Osiguranje €/dan'],['registration_per_day_eur','Registracija €/dan'],['leasing_per_day_eur','Lizing €/dan'],['other_fixed_per_day_eur','Ostalo fiksno €/dan'],['note','Napomena']],
+    drivers:[['full_name','Ime i prezime*'],['company_id','Firma'],['phone','Telefon'],['email','Email'],['license_number','Vozačka'],['passport_number','Pasoš'],['default_daily_allowance_eur','Dnevnica €'],['default_salary_per_km_eur','Plata €/km'],['default_salary_per_day_eur','Plata €/dan (opciono)'],['default_bonus_per_km_eur','Bonus €/km'],['note','Napomena']]}[kind];
+  var form=defs.map(function(d){ if(d[0]==='company_id') return field(d[1],selectHtml('ef_company_id',companyOpts(),rec.company_id,'— firma —')); return field(d[1],inp('ef_'+d[0],rec[d[0]])); }).join('')+field('Aktivan',selectHtml('ef_active',[{value:'true',label:'Da'},{value:'false',label:'Ne'}],id?String(act(rec)):'true'));
+  openModal((id?'Izmena':'Novi')+' — '+kind,'<div class="row">'+form+'</div>','<button class="btn" onclick="saveEntity(\''+kind+'\',\''+(id||'')+'\')">Sačuvaj</button>'); window.__edefs={defs:defs,kind:kind,idF:idF}; }
+function saveEntity(kind,id){ var E=window.__edefs; var numFields=['payment_terms_days','year','capacity_kg','avg_consumption_loaded_l_100km','avg_consumption_empty_l_100km','depreciation_per_km_eur','maintenance_per_km_eur','tires_per_km_eur','insurance_per_day_eur','registration_per_day_eur','leasing_per_day_eur','other_fixed_per_day_eur','default_daily_allowance_eur','default_salary_per_day_eur','default_salary_per_km_eur','default_bonus_per_km_eur'];
+  var obj=id?byId(kind,E.idF,id):{}; E.defs.forEach(function(d){var v=val('ef_'+d[0]); obj[d[0]]=numFields.indexOf(d[0])>-1?num(v):v;}); obj.active=(val('ef_active')==='true');
+  if(!id){ var prefix={clients:'CLIENT',trucks:'TRUCK',drivers:'DRIVER'}[kind]; var n=table(kind).filter(function(r){return (r[E.idF]||'').indexOf(prefix+'-')===0;}).length+1; obj[E.idF]=prefix+'-'+('000'+n).slice(-4); table(kind).push(obj); }
+  saveDB(); toast('Sačuvano.','ok'); closeModal(); adminTab(kind); }
+function costTargetOpts(){ var o=[{value:'',label:'Sve ture'}];
+  table('trucks').filter(act).forEach(function(t){o.push({value:'truck:'+t.truck_id,label:'Kamion: '+t.plate_number});});
+  table('drivers').filter(act).forEach(function(d){o.push({value:'driver:'+d.driver_id,label:'Vozač: '+d.full_name});});
+  return o; }
+function costTargetLabel(tg){ if(!tg)return 'Sve'; if(tg.indexOf('truck:')===0){var t=byId('trucks','truck_id',tg.slice(6));return 'Kamion: '+(t?t.plate_number:'?');}
+  if(tg.indexOf('driver:')===0){var d=byId('drivers','driver_id',tg.slice(7));return 'Vozač: '+(d?d.full_name:'?');} return 'Sve'; }
+function adminCosts(){ var data=table('costItems');
+  var rows=data.map(function(c){return '<tr><td>'+escapeHtml(c.name)+'</td><td>'+escapeHtml(c.category)+'</td><td>'+escapeHtml(COST_TYPE_LABEL[c.type]||c.type)+'</td><td>'+escapeHtml(c.unit)+'</td><td class="num">'+fmtN(num(c.default_rate),2)+'</td>'+
+    '<td>'+escapeHtml(costTargetLabel(c.target))+'</td>'+
+    '<td>'+((c.is_active===true||num(c.is_active)===1)?badge('aktivna','success'):badge('neaktivna','neutral'))+'</td><td>'+((c.is_mandatory===true||num(c.is_mandatory)===1)?badge('obavezna','ok'):'')+'</td>'+
+    '<td><div class="actions"><button class="btn sm sec" onclick="editCost(\''+c.cost_item_id+'\')">Izmeni</button><button class="btn sm sec" onclick="copyCost(\''+c.cost_item_id+'\')">Kopiraj</button><button class="btn sm danger" onclick="deleteCost(\''+c.cost_item_id+'\')">Briši</button></div></td></tr>';}).join('');
+  document.getElementById('adminBody').innerHTML='<div class="panel"><div class="flex between"><h2>Troškovne stavke</h2><button class="btn" onclick="editCost()">+ Nova stavka</button></div><div class="table-wrap"><table class="data"><thead><tr><th>Naziv</th><th>Kategorija</th><th>Tip obračuna</th><th>Jedinica</th><th class="num">Default stopa</th><th>Veže se za</th><th>Aktivna</th><th>Obavezna</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="muted" style="margin-top:8px">Stavka može da se veže za određeni kamion ili vozača (primenjuje se samo kad su oni na turi). Nove/izmenjene stavke se odmah koriste u obračunu novih tura.</p></div>'; }
+function copyCost(id){ var src=byId('costItems','cost_item_id',id); if(!src)return; var c=JSON.parse(JSON.stringify(src));
+  var n=table('costItems').length+1; c.cost_item_id='COST-'+('000'+n).slice(-4); c.name=(src.name||'')+' (kopija)'; table('costItems').push(c); saveDB(); toast('Kopija stavke napravljena.','ok'); adminTab('costs'); }
+function deleteCost(id){ if(!confirm('Obrisati troškovnu stavku? (Postojeće ture zadržavaju svoj snapshot.)')) return;
+  DB.costItems=table('costItems').filter(function(c){return c.cost_item_id!==id;}); saveDB(); toast('Stavka obrisana.','ok'); adminTab('costs'); }
+function editCost(id){ var c=id?byId('costItems','cost_item_id',id):{is_active:true,is_mandatory:false,target:''};
+  var body='<div class="row">'+field('Naziv*',inp('ci_name',c.name))+field('Kategorija',selectHtml('ci_category',COST_CATEGORIES,c.category))+'</div>'+
+    '<div class="row">'+field('Tip obračuna',selectHtml('ci_type',COST_TYPES.map(function(t){return {value:t,label:COST_TYPE_LABEL[t]};}),c.type))+field('Osnova',selectHtml('ci_base',CALC_BASES,c.calculation_base))+'</div>'+
+    '<div class="row">'+field('Jedinica',inp('ci_unit',c.unit))+field('Default stopa',inp('ci_rate',c.default_rate))+'</div>'+
+    '<div class="row">'+field('Veže se za (kamion/vozač)',selectHtml('ci_target',costTargetOpts(),c.target||''))+field('Obavezna',selectHtml('ci_mand',[{value:'true',label:'Da'},{value:'false',label:'Ne'}],String(c.is_mandatory===true||num(c.is_mandatory)===1)))+'</div>'+
+    '<div class="row">'+field('Aktivna',selectHtml('ci_active',[{value:'true',label:'Da'},{value:'false',label:'Ne'}],String(!(c.is_active===false||num(c.is_active)===0))))+field('Napomena',inp('ci_note',c.note))+'</div>';
+  openModal((id?'Izmena':'Nova')+' troškovna stavka',body,'<button class="btn" onclick="saveCost(\''+(id||'')+'\')">Sačuvaj</button>'); }
+function saveCost(id){ if(!val('ci_name')){toast('Naziv je obavezan.','err');return;}
+  var obj=id?byId('costItems','cost_item_id',id):{created_at:nowIso(),sort_order:table('costItems').length+1};
+  obj.name=val('ci_name'); obj.category=val('ci_category'); obj.type=val('ci_type'); obj.calculation_base=val('ci_base'); obj.unit=val('ci_unit');
+  obj.default_rate=num(val('ci_rate')); obj.target=val('ci_target'); obj.is_mandatory=val('ci_mand')==='true'; obj.is_active=val('ci_active')==='true'; obj.note=val('ci_note'); obj.updated_at=nowIso();
+  if(!id){ var n=table('costItems').length+1; obj.cost_item_id='COST-'+('000'+n).slice(-4); table('costItems').push(obj); }
+  saveDB(); toast('Sačuvano. Stavka je odmah aktivna u obračunu.','ok'); closeModal(); adminTab('costs'); }
+</script>
+</body>
+</html>
